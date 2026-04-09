@@ -4,12 +4,20 @@
 <meta charset="UTF-8">
 <title>REGISTRO HORAS EXTRA MD</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<!-- Librerías nativas para PDF (Compatibles con todos los móviles y navegadores) -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+
 <style>
+* { box-sizing: border-box; }
 body { font-family: Arial; margin:0; padding:15px; background: #f4f6f9; color:#000; transition: background 0.3s,color 0.3s;}
 body.dark-mode { background: #121212; color:#e0e0e0; }
 h1 { text-align:center; text-transform: uppercase; }
-.top-cards { display:flex; gap:10px; flex-wrap: wrap; }
-.card { background:white; padding:15px; border-radius:12px; margin-bottom:15px; box-shadow:0 2px 8px rgba(0,0,0,0.1); flex:1; text-align:center; transition: background 0.3s, color 0.3s; min-width:120px;}
+.top-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
+.card { background:white; padding:15px; border-radius:12px; margin-bottom:15px; box-shadow:0 2px 8px rgba(0,0,0,0.1); text-align:center; transition: background 0.3s, color 0.3s; }
+.top-cards .card { margin-bottom: 0; min-width: 0; }
+.card-extra { grid-column: 1 / -1; }
+.card-extra h2 { font-size: 2.5em; margin: 10px 0; }
 .dark-mode .card { background:#1e1e1e; }
 .positive { border-top:5px solid #28a745; }
 .negative { border-top:5px solid #dc3545; }
@@ -30,29 +38,46 @@ button { background:#007bff; color:white; border:none; font-size:16px; cursor:po
 #mensaje { position: fixed; top: 20px; right: 20px; background: #28a745; color: white; padding: 10px 20px; border-radius: 8px; display: none; z-index: 9999; box-shadow: 0 2px 10px rgba(0,0,0,0.3);}
 #buscador { margin-bottom:10px; }
 #reiniciarAñoBtn { background:#dc3545; color:white; margin-top:20px; }
+
+/* Nuevos estilos para la cabecera del historial y el botón de PDF */
+.header-historial { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+.header-historial h3 { margin: 0; }
+#btnExportarPdf { background: #28a745; color: white; width: auto; margin: 0; padding: 8px 15px; font-size: 14px; border-radius: 8px; }
+#btnExportarPdf:hover { background: #218838; }
+
+/* Estilos del modal personalizado */
+#customModal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 10000; justify-content: center; align-items: center; }
+.modal-content { background: white; padding: 25px; border-radius: 12px; text-align: center; max-width: 320px; width: 90%; box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
+.modal-content p { margin-top: 0; margin-bottom: 20px; font-size: 16px; color: #333; }
+.modal-buttons { display: flex; gap: 10px; justify-content: center; }
+.modal-buttons button { margin: 0; padding: 10px 20px; width: auto; flex: 1; }
+#modalBtnCancel { background: #6c757d; }
+#modalBtnOk { background: #007bff; }
+.dark-mode .modal-content { background: #2a2a2a; border: 1px solid #444; }
+.dark-mode .modal-content p { color: #f0f0f0; }
 </style>
 </head>
 <body>
- 
+
 <h1>REGISTRO HORAS EXTRA MD</h1>
- 
+
 <button id="modoBtn" onclick="toggleModo()">Modo Oscuro</button>
- 
+
 <div class="top-cards">
-  <div class="card positive">
+  <div class="card positive card-extra">
     <h3>Horas Extra</h3>
-    <h2 id="totalExtra">0</h2>
+    <h2 id="totalExtra">0.00</h2>
   </div>
   <div class="card negative">
     <h3>Horas Negativas</h3>
-    <h2 id="totalNeg">0</h2>
+    <h2 id="totalNeg">0.00</h2>
   </div>
   <div class="card exceso">
     <h3>Horas Exceso</h3>
-    <h2 id="totalExceso">0</h2>
+    <h2 id="totalExceso">0.00</h2>
   </div>
 </div>
- 
+
 <div class="card">
   <h3>Añadir registro</h3>
   <select id="tipo">
@@ -62,27 +87,74 @@ button { background:#007bff; color:white; border:none; font-size:16px; cursor:po
     <option value="nocturna">🌙 Hora Nocturna</option>
     <option value="exceso">⚠️ Horas Exceso</option>
   </select>
- 
+
   <input type="number" id="horas" placeholder="Horas">
   <input type="date" id="fecha" placeholder="Fecha">
   <input type="text" id="desc" placeholder="Observaciones">
- 
+
   <button onclick="guardar()">Guardar</button>
 </div>
- 
+
 <div class="card">
-  <h3>Historial</h3>
+  <div class="header-historial">
+    <h3>Historial</h3>
+    <!-- Botón verde de PDF -->
+    <button id="btnExportarPdf" onclick="exportarPDF()">📄 Exportar a PDF</button>
+  </div>
+  
   <input type="text" id="buscador" placeholder="Buscar por tipo, fecha, mes o observaciones" oninput="mostrar()">
   <div id="lista"></div>
 </div>
- 
+
 <button id="reiniciarAñoBtn" onclick="reiniciarAno()">Reiniciar Año</button>
- 
+
 <div id="mensaje">Año reiniciado correctamente ✅</div>
- 
+
+<div style="text-align: center; margin-top: 20px; padding-bottom: 20px; font-size: 13px; opacity: 0.6; font-weight: bold;">
+  Creditos: AVS ver 1.0
+</div>
+
+<!-- Modal HTML -->
+<div id="customModal">
+  <div class="modal-content">
+    <p id="modalText"></p>
+    <div class="modal-buttons">
+      <button id="modalBtnCancel">Cancelar</button>
+      <button id="modalBtnOk">Aceptar</button>
+    </div>
+  </div>
+</div>
+
 <script>
 let lista = JSON.parse(localStorage.getItem("horas")) || [];
- 
+
+// Lógica del Modal Personalizado
+let modalCallback = null;
+function showModal(mensaje, isConfirm = false, callback = null) {
+  document.getElementById('modalText').innerText = mensaje;
+  document.getElementById('customModal').style.display = 'flex';
+  
+  if (isConfirm) {
+    document.getElementById('modalBtnCancel').style.display = 'block';
+    modalCallback = callback;
+  } else {
+    document.getElementById('modalBtnCancel').style.display = 'none';
+    modalCallback = null;
+  }
+}
+
+function closeModal(result) {
+  document.getElementById('customModal').style.display = 'none';
+  const cb = modalCallback; // Guardamos el callback temporalmente
+  modalCallback = null;     // Limpiamos antes de ejecutar por si se lanza otro modal
+  if (result && cb) {
+    cb();
+  }
+}
+
+document.getElementById('modalBtnOk').onclick = () => closeModal(true);
+document.getElementById('modalBtnCancel').onclick = () => closeModal(false);
+
 // Modo claro/oscuro
 if(localStorage.getItem("modo")==="dark") document.body.classList.add("dark-mode");
 function toggleModo(){
@@ -91,23 +163,23 @@ function toggleModo(){
   localStorage.setItem("modo",modo);
   document.getElementById("modoBtn").innerText = modo==="dark"?"Modo Claro":"Modo Oscuro";
 }
- 
+
 // Guardar registro
 function guardar(){
   let horasInput = Number(document.getElementById("horas").value);
   const desc = document.getElementById("desc").value;
   const fecha = document.getElementById("fecha").value;
   const tipo = document.getElementById("tipo").value;
-  if(!horasInput){ alert("Introduce las horas"); return;}
-  if(!fecha){ alert("La fecha es obligatoria"); return; }
- 
+  if(!horasInput){ showModal("Introduce las horas"); return;}
+  if(!fecha){ showModal("La fecha es obligatoria"); return; }
+
   let horasFinal = horasInput;
   if(horasInput>0){
     if(tipo==="extra") horasFinal = horasInput*1.75;
     else if(tipo==="festiva") horasFinal = horasInput*2.25;
     else if(tipo==="nocturna") horasFinal = horasInput*2;
   }
- 
+
   let tipoFinal = (tipo==="extra"||tipo==="festiva"||tipo==="nocturna")?"extra":tipo;
   if(tipo==="exceso") tipoFinal="exceso";
   lista.push({ horas:horasFinal, desc, fecha, tipo:tipoFinal, tipoOriginal:tipo });
@@ -117,34 +189,113 @@ function guardar(){
   document.getElementById("fecha").value="";
   mostrar();
 }
- 
+
 // Borrar registro individual
 function borrarRegistro(index){
-  if(confirm("¿Seguro que quieres borrar este registro?")) {
+  showModal("¿Seguro que quieres borrar este registro?", true, () => {
     lista.splice(index,1);
     localStorage.setItem("horas", JSON.stringify(lista));
     mostrar();
-  }
+  });
 }
- 
+
 // Reiniciar Año
 function reiniciarAno(){
   const añoActual = new Date().getFullYear();
-  if(confirm(`¿Seguro que quieres reiniciar todos los registros del año ${añoActual}?`)){
-    lista = lista.filter(item=>{
-      if(!item.fecha) return true;
-      const fechaObj = new Date(item.fecha);
-      return fechaObj.getFullYear() !== añoActual;
-    });
-    localStorage.setItem("horas", JSON.stringify(lista));
-    mostrar();
- 
-    const msg = document.getElementById("mensaje");
-    msg.style.display = "block";
-    setTimeout(()=>{ msg.style.display="none"; }, 3000);
-  }
+  // Primera confirmación
+  showModal(`¿Seguro que quieres reiniciar todos los registros del año ${añoActual}?`, true, () => {
+    // Segunda confirmación (Doble confirmación)
+    setTimeout(() => {
+      showModal(`¡ATENCIÓN! Esta acción es irreversible.\n¿Estás ABSOLUTAMENTE seguro de borrar el año ${añoActual}?`, true, () => {
+        lista = lista.filter(item=>{
+          if(!item.fecha) return true;
+          const fechaObj = new Date(item.fecha);
+          return fechaObj.getFullYear() !== añoActual;
+        });
+        localStorage.setItem("horas", JSON.stringify(lista));
+        mostrar();
+
+        const msg = document.getElementById("mensaje");
+        msg.style.display = "block";
+        setTimeout(()=>{ msg.style.display="none"; }, 3000);
+      });
+    }, 150); // Pequeño retraso visual para que se note el cambio de ventana
+  });
 }
- 
+
+// Exportar a PDF (Método Nativo con jsPDF)
+function exportarPDF() {
+  if (lista.length === 0) {
+    showModal("No hay registros en el historial para exportar.");
+    return;
+  }
+
+  // Inicializar jsPDF
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF();
+
+  // Título del documento
+  doc.setFontSize(16);
+  doc.setTextColor(0, 0, 0);
+  doc.text("Registro de Horas Extra MD", 14, 20);
+
+  // Agregar resumen de horas
+  doc.setFontSize(11);
+  const totalEx = document.getElementById("totalExtra").innerText;
+  const totalNeg = document.getElementById("totalNeg").innerText;
+  const totalExc = document.getElementById("totalExceso").innerText;
+
+  doc.setTextColor(40, 167, 69); // Verde
+  doc.text(`Extra: ${totalEx}`, 14, 30);
+  
+  doc.setTextColor(220, 53, 69); // Rojo
+  doc.text(`Negativas: ${totalNeg}`, 70, 30);
+  
+  doc.setTextColor(211, 158, 0); // Amarillo Oscuro
+  doc.text(`Exceso: ${totalExc}`, 130, 30);
+
+  // Ordenar lista temporalmente por fecha para el PDF
+  let listaOrdenada = [...lista].sort((a, b) => new Date(a.fecha) - new Date(b.fecha));
+
+  // Preparar los datos para la tabla
+  const tableData = listaOrdenada.map(item => {
+     let fechaFormat = "Sin fecha";
+     if(item.fecha){
+       const f = new Date(item.fecha);
+       const dia = String(f.getDate()).padStart(2,'0');
+       const mes = String(f.getMonth()+1).padStart(2,'0');
+       const año = f.getFullYear();
+       fechaFormat = `${dia}/${mes}/${año}`;
+     }
+     return [fechaFormat, item.tipoOriginal.toUpperCase(), item.horas.toFixed(2), item.desc];
+  });
+
+  // Generar tabla limpia y profesional
+  doc.autoTable({
+    startY: 35,
+    head: [['Fecha', 'Tipo', 'Horas', 'Observaciones']],
+    body: tableData,
+    theme: 'striped',
+    headStyles: { fillColor: [0, 123, 255] }, // Cabecera Azul
+    didParseCell: function(data) {
+      if (data.section === 'body' && data.column.index === 1) {
+        // Dar color al tipo de hora en la tabla para que se vea claro
+        const tipo = data.cell.raw;
+        if (tipo === 'NEGATIVA') {
+          data.cell.styles.textColor = [220, 53, 69]; // Rojo
+        } else if (tipo === 'EXCESO') {
+          data.cell.styles.textColor = [211, 158, 0]; // Amarillo
+        } else {
+          data.cell.styles.textColor = [40, 167, 69]; // Verde
+        }
+      }
+    }
+  });
+
+  // Descargar el archivo
+  doc.save('Historial_Horas_Extra.pdf');
+}
+
 // Mostrar historial
 function mostrar(){
   const cont = document.getElementById("lista");
@@ -152,7 +303,7 @@ function mostrar(){
   let totalExtra=0, totalNeg=0, totalExceso=0;
   const meses = {};
   const filtro = document.getElementById("buscador").value.toLowerCase();
- 
+
   lista.forEach((item,index)=>{
     if(item.tipo==="extra") totalExtra+=item.horas;
     if(item.tipo==="negativa") totalNeg+=item.horas;
@@ -162,7 +313,7 @@ function mostrar(){
     if(!meses[mesKey]) meses[mesKey]=[];
     meses[mesKey].push({...item,index});
   });
- 
+
   Object.keys(meses).sort().forEach(mesKey=>{
     let displayMes="Sin fecha", caducaText="";
     if(mesKey!=="Sin fecha"){
@@ -176,9 +327,9 @@ function mostrar(){
       const contieneExceso = meses[mesKey].some(item=>item.tipo==="exceso");
       caducaText = contieneExceso ? "" : `Caduca: ${caducaStr}`;
     }
- 
+
     cont.innerHTML+=`<div class="mes-titulo"><span>${displayMes}</span><span>${caducaText}</span></div>`;
- 
+
     meses[mesKey].forEach(item=>{
       let fechaFormat = "Sin fecha";
       let mesAñoStr="";
@@ -190,21 +341,21 @@ function mostrar(){
         fechaFormat = `${dia}/${mes}/${año}`;
         mesAñoStr = f.toLocaleString('es-ES',{month:'long',year:'numeric'});
       }
- 
+
       if(filtro){
         if(!item.desc.toLowerCase().includes(filtro) &&
            !item.tipoOriginal.toLowerCase().includes(filtro) &&
            !fechaFormat.includes(filtro) &&
            !mesAñoStr.toLowerCase().includes(filtro)) return;
       }
- 
+
       let label='', claseColor='';
       if(item.tipoOriginal==='extra') { label='EXTRA'; claseColor='verde'; }
       if(item.tipoOriginal==='negativa') { label='NEGATIVA'; claseColor='rojo'; }
       if(item.tipoOriginal==='festiva') { label='FESTIVA'; claseColor='verde'; }
       if(item.tipoOriginal==='nocturna') { label='NOCTURNA'; claseColor='verde'; }
       if(item.tipoOriginal==='exceso') { label='EXCESO'; claseColor='amarillo'; }
- 
+
       cont.innerHTML+=`
       <div class="item">
         <div>
@@ -216,12 +367,12 @@ function mostrar(){
       </div>`;
     });
   });
- 
+
   document.getElementById("totalExtra").innerText=totalExtra.toFixed(2);
   document.getElementById("totalNeg").innerText=totalNeg.toFixed(2);
   document.getElementById("totalExceso").innerText=totalExceso.toFixed(2);
 }
- 
+
 mostrar();
 </script>
 </body>
