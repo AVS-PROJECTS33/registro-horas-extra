@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>REGISTRO HORAS EXTRA MD</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+body { font-family: Arial; margin:0; padding:15px; background: #f4f6f9; color:#000; transition: background 0.3s,color 0.3s;}
+body.dark-mode { background: #121212; color:#e0e0e0; }
+h1 { text-align:center; text-transform: uppercase; }
+.top-cards { display:flex; gap:10px; flex-wrap: wrap; }
+.card { background:white; padding:15px; border-radius:12px; margin-bottom:15px; box-shadow:0 2px 8px rgba(0,0,0,0.1); flex:1; text-align:center; transition: background 0.3s, color 0.3s; min-width:120px;}
+.dark-mode .card { background:#1e1e1e; }
+.positive { border-top:5px solid #28a745; }
+.negative { border-top:5px solid #dc3545; }
+.exceso { border-top:5px solid #ffc107; }
+input, select, button { width:100%; padding:10px; margin-top:10px; border-radius:8px; border:1px solid #ccc; transition: background 0.3s,color 0.3s; }
+.dark-mode input, .dark-mode select { background:#2a2a2a; color:#e0e0e0; border:1px solid #555; }
+.dark-mode button { background:#007bff; color:white; }
+button { background:#007bff; color:white; border:none; font-size:16px; cursor:pointer; }
+.item { border-bottom:1px solid #eee; padding:10px 0; display:flex; justify-content:space-between; align-items:center; }
+.dark-mode .item { border-color:#333; }
+.tipo { font-size:12px; font-weight:bold; }
+.verde { color:#28a745; }
+.rojo { color:#dc3545; }
+.amarillo { color:#ffc107; }
+.borrar-btn { background:#dc3545; padding:5px 10px; font-size:12px; border-radius:6px; }
+.mes-titulo { text-align:left; margin-top:20px; font-weight:bold; font-size:16px; display:flex; justify-content: space-between; }
+#modoBtn { margin-bottom:15px; }
+#mensaje { position: fixed; top: 20px; right: 20px; background: #28a745; color: white; padding: 10px 20px; border-radius: 8px; display: none; z-index: 9999; box-shadow: 0 2px 10px rgba(0,0,0,0.3);}
+#buscador { margin-bottom:10px; }
+#reiniciarAñoBtn { background:#dc3545; color:white; margin-top:20px; }
+</style>
+</head>
+<body>
+ 
+<h1>REGISTRO HORAS EXTRA MD</h1>
+ 
+<button id="modoBtn" onclick="toggleModo()">Modo Oscuro</button>
+ 
+<div class="top-cards">
+  <div class="card positive">
+    <h3>Horas Extra</h3>
+    <h2 id="totalExtra">0</h2>
+  </div>
+  <div class="card negative">
+    <h3>Horas Negativas</h3>
+    <h2 id="totalNeg">0</h2>
+  </div>
+  <div class="card exceso">
+    <h3>Horas Exceso</h3>
+    <h2 id="totalExceso">0</h2>
+  </div>
+</div>
+ 
+<div class="card">
+  <h3>Añadir registro</h3>
+  <select id="tipo">
+    <option value="extra">➕ Horas Extra</option>
+    <option value="negativa">➖ Horas Negativas</option>
+    <option value="festiva">🎉 Hora Festiva</option>
+    <option value="nocturna">🌙 Hora Nocturna</option>
+    <option value="exceso">⚠️ Horas Exceso</option>
+  </select>
+ 
+  <input type="number" id="horas" placeholder="Horas">
+  <input type="date" id="fecha" placeholder="Fecha">
+  <input type="text" id="desc" placeholder="Observaciones">
+ 
+  <button onclick="guardar()">Guardar</button>
+</div>
+ 
+<div class="card">
+  <h3>Historial</h3>
+  <input type="text" id="buscador" placeholder="Buscar por tipo, fecha, mes o observaciones" oninput="mostrar()">
+  <div id="lista"></div>
+</div>
+ 
+<button id="reiniciarAñoBtn" onclick="reiniciarAno()">Reiniciar Año</button>
+ 
+<div id="mensaje">Año reiniciado correctamente ✅</div>
+ 
+<script>
+let lista = JSON.parse(localStorage.getItem("horas")) || [];
+ 
+// Modo claro/oscuro
+if(localStorage.getItem("modo")==="dark") document.body.classList.add("dark-mode");
+function toggleModo(){
+  document.body.classList.toggle("dark-mode");
+  const modo = document.body.classList.contains("dark-mode") ? "dark":"light";
+  localStorage.setItem("modo",modo);
+  document.getElementById("modoBtn").innerText = modo==="dark"?"Modo Claro":"Modo Oscuro";
+}
+ 
+// Guardar registro
+function guardar(){
+  let horasInput = Number(document.getElementById("horas").value);
+  const desc = document.getElementById("desc").value;
+  const fecha = document.getElementById("fecha").value;
+  const tipo = document.getElementById("tipo").value;
+  if(!horasInput){ alert("Introduce las horas"); return;}
+  if(!fecha){ alert("La fecha es obligatoria"); return; }
+ 
+  let horasFinal = horasInput;
+  if(horasInput>0){
+    if(tipo==="extra") horasFinal = horasInput*1.75;
+    else if(tipo==="festiva") horasFinal = horasInput*2.25;
+    else if(tipo==="nocturna") horasFinal = horasInput*2;
+  }
+ 
+  let tipoFinal = (tipo==="extra"||tipo==="festiva"||tipo==="nocturna")?"extra":tipo;
+  if(tipo==="exceso") tipoFinal="exceso";
+  lista.push({ horas:horasFinal, desc, fecha, tipo:tipoFinal, tipoOriginal:tipo });
+  localStorage.setItem("horas", JSON.stringify(lista));
+  document.getElementById("horas").value="";
+  document.getElementById("desc").value="";
+  document.getElementById("fecha").value="";
+  mostrar();
+}
+ 
+// Borrar registro individual
+function borrarRegistro(index){
+  if(confirm("¿Seguro que quieres borrar este registro?")) {
+    lista.splice(index,1);
+    localStorage.setItem("horas", JSON.stringify(lista));
+    mostrar();
+  }
+}
+ 
+// Reiniciar Año
+function reiniciarAno(){
+  const añoActual = new Date().getFullYear();
+  if(confirm(`¿Seguro que quieres reiniciar todos los registros del año ${añoActual}?`)){
+    lista = lista.filter(item=>{
+      if(!item.fecha) return true;
+      const fechaObj = new Date(item.fecha);
+      return fechaObj.getFullYear() !== añoActual;
+    });
+    localStorage.setItem("horas", JSON.stringify(lista));
+    mostrar();
+ 
+    const msg = document.getElementById("mensaje");
+    msg.style.display = "block";
+    setTimeout(()=>{ msg.style.display="none"; }, 3000);
+  }
+}
+ 
+// Mostrar historial
+function mostrar(){
+  const cont = document.getElementById("lista");
+  cont.innerHTML="";
+  let totalExtra=0, totalNeg=0, totalExceso=0;
+  const meses = {};
+  const filtro = document.getElementById("buscador").value.toLowerCase();
+ 
+  lista.forEach((item,index)=>{
+    if(item.tipo==="extra") totalExtra+=item.horas;
+    if(item.tipo==="negativa") totalNeg+=item.horas;
+    if(item.tipo==="exceso") totalExceso+=item.horas;
+    const dateObj = item.fecha ? new Date(item.fecha) : null;
+    const mesKey = dateObj ? `${dateObj.getFullYear()}-${dateObj.getMonth()+1}` : "Sin fecha";
+    if(!meses[mesKey]) meses[mesKey]=[];
+    meses[mesKey].push({...item,index});
+  });
+ 
+  Object.keys(meses).sort().forEach(mesKey=>{
+    let displayMes="Sin fecha", caducaText="";
+    if(mesKey!=="Sin fecha"){
+      const parts=mesKey.split("-");
+      const year = parseInt(parts[0]);
+      const month = parseInt(parts[1])-1;
+      const mesNombre = new Date(year,month).toLocaleString('es-ES',{month:'long'});
+      displayMes = `${mesNombre} ${year}`;
+      let caduca = new Date(year, month+4,1);
+      const caducaStr = caduca.toLocaleString('es-ES',{month:'long',year:'numeric'});
+      const contieneExceso = meses[mesKey].some(item=>item.tipo==="exceso");
+      caducaText = contieneExceso ? "" : `Caduca: ${caducaStr}`;
+    }
+ 
+    cont.innerHTML+=`<div class="mes-titulo"><span>${displayMes}</span><span>${caducaText}</span></div>`;
+ 
+    meses[mesKey].forEach(item=>{
+      let fechaFormat = "Sin fecha";
+      let mesAñoStr="";
+      if(item.fecha){
+        const f = new Date(item.fecha);
+        const dia = String(f.getDate()).padStart(2,'0');
+        const mes = String(f.getMonth()+1).padStart(2,'0');
+        const año = f.getFullYear();
+        fechaFormat = `${dia}/${mes}/${año}`;
+        mesAñoStr = f.toLocaleString('es-ES',{month:'long',year:'numeric'});
+      }
+ 
+      if(filtro){
+        if(!item.desc.toLowerCase().includes(filtro) &&
+           !item.tipoOriginal.toLowerCase().includes(filtro) &&
+           !fechaFormat.includes(filtro) &&
+           !mesAñoStr.toLowerCase().includes(filtro)) return;
+      }
+ 
+      let label='', claseColor='';
+      if(item.tipoOriginal==='extra') { label='EXTRA'; claseColor='verde'; }
+      if(item.tipoOriginal==='negativa') { label='NEGATIVA'; claseColor='rojo'; }
+      if(item.tipoOriginal==='festiva') { label='FESTIVA'; claseColor='verde'; }
+      if(item.tipoOriginal==='nocturna') { label='NOCTURNA'; claseColor='verde'; }
+      if(item.tipoOriginal==='exceso') { label='EXCESO'; claseColor='amarillo'; }
+ 
+      cont.innerHTML+=`
+      <div class="item">
+        <div>
+          <span class="tipo ${claseColor}">${label}</span><br>
+          <b>${item.horas.toFixed(2)} horas</b><br>
+          <small>${item.desc} - ${fechaFormat}</small>
+        </div>
+        <button class="borrar-btn" onclick="borrarRegistro(${item.index})">Borrar</button>
+      </div>`;
+    });
+  });
+ 
+  document.getElementById("totalExtra").innerText=totalExtra.toFixed(2);
+  document.getElementById("totalNeg").innerText=totalNeg.toFixed(2);
+  document.getElementById("totalExceso").innerText=totalExceso.toFixed(2);
+}
+ 
+mostrar();
+</script>
+</body>
+</html>
