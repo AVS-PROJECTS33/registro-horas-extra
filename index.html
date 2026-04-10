@@ -172,10 +172,6 @@
         .manual-item { text-align: left; margin-bottom: 15px; font-size: 13px; }
         .manual-item b { color: var(--primary); display: block; margin-bottom: 3px; }
 
-        .loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-body); z-index: 11000; display: flex; flex-direction: column; justify-content: center; align-items: center; }
-        .spinner { border: 3px solid rgba(0,0,0,0.1); width: 30px; height: 30px; border-radius: 50%; border-left-color: var(--primary); animation: spin 1s linear infinite; }
-        @keyframes spin { to { transform: rotate(360deg); } }
-
         .backup-controls {
             display: flex;
             gap: 8px;
@@ -189,11 +185,6 @@
     </style>
 </head>
 <body>
-
-<div id="loadingScreen" class="loading-overlay">
-    <div class="spinner"></div>
-    <p style="margin-top:10px; font-size: 12px;">Sincronizando...</p>
-</div>
 
 <div class="header-container">
     <h1>REGISTRO HORAS MD</h1>
@@ -273,8 +264,8 @@
 <div id="mensaje">✅</div>
 
 <div style="text-align: center; margin-bottom: 30px; font-size: 11px; opacity: 0.5;">
-    ID: <span id="userIdDisplay">...</span><br>
-    AVS v2.8
+    Almacenamiento Local<br>
+    AVS v2.9
 </div>
 
 <!-- Modal de Confirmación -->
@@ -322,59 +313,23 @@
     </div>
 </div>
 
-<script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-    import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-    import { getFirestore, collection, doc, addDoc, deleteDoc, onSnapshot, query, getDocs, writeBatch } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+<script>
+    // Inicializar lista desde el almacenamiento local
+    let lista = JSON.parse(localStorage.getItem('horas_md_data')) || [];
 
-    const firebaseConfig = JSON.parse(__firebase_config);
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const db = getFirestore(app);
-    const appId = typeof __app_id !== 'undefined' ? __app_id : 'horas-extra-md-v1';
-
-    let user = null;
-    let lista = [];
-
-    const initAuth = async () => {
-        try {
-            if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                await signInWithCustomToken(auth, __initial_auth_token);
-            } else {
-                await signInAnonymously(auth);
-            }
-        } catch (e) { console.error(e); }
-    };
-    initAuth();
-
-    onAuthStateChanged(auth, (u) => {
-        user = u;
-        if (user) {
-            document.getElementById('userIdDisplay').innerText = user.uid;
-            suscribirDatos();
-        }
-    });
-
-    function suscribirDatos() {
-        if (!user) return;
-        const colRef = collection(db, 'artifacts', appId, 'users', user.uid, 'registros');
-        onSnapshot(colRef, (snapshot) => {
-            lista = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-            lista.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
-            mostrar();
-            document.getElementById('loadingScreen').style.display = 'none';
-        }, (error) => { console.error(error); });
+    // Función auxiliar para guardar en localStorage y actualizar la vista
+    function guardarLocal() {
+        localStorage.setItem('horas_md_data', JSON.stringify(lista));
+        mostrar();
     }
 
-    window.guardar = async () => {
-        if (!user) return;
+    window.guardar = () => {
         const hIn = parseFloat(document.getElementById("horas").value);
         const desc = document.getElementById("desc").value || "-";
         const fecha = document.getElementById("fecha").value;
         const tipo = document.getElementById("tipo").value;
 
-        // Corregido: Permitir horas negativas si el tipo es 'negativa' o el usuario pone el signo '-'
-        const isValid = tipo === "negativa" ? !isNaN(hIn) && hIn !== 0 : !isNaN(hIn) && hIn !== 0;
+        const isValid = !isNaN(hIn) && hIn !== 0;
 
         if (!isValid) { showModal("Indica una cantidad de horas válida."); return; }
         if (!fecha) { showModal("La fecha es necesaria."); return; }
@@ -384,45 +339,44 @@
         else if (tipo === "festiva") factor = 2.25;
         else if (tipo === "nocturna") factor = 2.0;
 
-        // Si es tipo negativa, nos aseguramos que el valor guardado sea absoluto para restarlo después 
-        // o lo guardamos directamente. Aquí el sistema espera que las negativas sean positivas en magnitud pero marcadas como 'negativa'.
         let valFinal = hIn;
         if (tipo === "negativa" && valFinal < 0) valFinal = Math.abs(valFinal);
 
-        try {
-            await addDoc(collection(db, 'artifacts', appId, 'users', user.uid, 'registros'), {
-                horas: valFinal * factor,
-                horasOriginales: valFinal,
-                desc,
-                fecha,
-                tipo: (tipo === "negativa" || tipo === "exceso") ? tipo : "extra",
-                tipoOriginal: tipo,
-                timestamp: Date.now()
-            });
-            document.getElementById("horas").value = "";
-            document.getElementById("desc").value = "";
-            showToast("Guardado");
-        } catch (e) { showModal("Error al guardar."); }
+        const nuevoRegistro = {
+            id: Date.now().toString(),
+            horas: valFinal * factor,
+            horasOriginales: valFinal,
+            desc,
+            fecha,
+            tipo: (tipo === "negativa" || tipo === "exceso") ? tipo : "extra",
+            tipoOriginal: tipo,
+            timestamp: Date.now()
+        };
+
+        lista.push(nuevoRegistro);
+        lista.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
+        guardarLocal();
+
+        document.getElementById("horas").value = "";
+        document.getElementById("desc").value = "";
+        showToast("Guardado");
     };
 
     window.borrarRegistro = (docId) => {
-        showModal("¿Borrar registro?", true, async () => {
-            try { await deleteDoc(doc(db, 'artifacts', appId, 'users', user.uid, 'registros', docId)); } 
-            catch (e) { console.error(e); }
+        showModal("¿Borrar registro?", true, () => {
+            lista = lista.filter(item => item.id !== docId);
+            guardarLocal();
+            showToast("Registro borrado");
         });
     };
 
     window.reiniciarAno = () => {
         const year = new Date().getFullYear();
-        // Primera confirmación
         showModal(`¿Deseas borrar TODOS los registros del año ${year}?`, true, () => {
-            // Segunda confirmación de seguridad
             setTimeout(() => {
-                showModal(`⚠️ ESTA ACCIÓN NO SE PUEDE DESHACER. ¿Estás realmente seguro de borrar el año ${year}?`, true, async () => {
-                    const q = query(collection(db, 'artifacts', appId, 'users', user.uid, 'registros'));
-                    const snap = await getDocs(q);
-                    const targets = snap.docs.filter(d => new Date(d.data().fecha).getFullYear() === year);
-                    await Promise.all(targets.map(d => deleteDoc(d.ref)));
+                showModal(`⚠️ ESTA ACCIÓN NO SE PUEDE DESHACER. ¿Estás realmente seguro de borrar el año ${year}?`, true, () => {
+                    lista = lista.filter(item => new Date(item.fecha).getFullYear() !== year);
+                    guardarLocal();
                     showToast("Año borrado por completo");
                 });
             }, 300);
@@ -445,7 +399,7 @@
             if (item.tipo === "negativa") tN += item.horas;
             if (item.tipo === "exceso") tX += item.horas;
 
-            const mKey = `${f.getFullYear()}-${f.getMonth()+1}`;
+            const mKey = `${f.getFullYear()}-${String(f.getMonth()+1).padStart(2,'0')}`;
             if (!meses[mKey]) meses[mKey] = { label: f.toLocaleString('es-ES', { month: 'long', year: 'numeric' }), items: [], cad: "" };
             if (item.tipo === "extra") {
                 let c = new Date(f.getFullYear(), f.getMonth() + 4, 1);
@@ -456,7 +410,7 @@
 
         Object.keys(meses).sort((a,b) => b.localeCompare(a)).forEach(k => {
             const m = meses[k];
-            cont.innerHTML += `<div class="mes-titulo"><span>${m.label}</span>${m.cad ? '<span>Vence: '+m.cad+'</span>' : ''}</div>`;
+            cont.innerHTML += `<div class="mes-titulo"><span style="text-transform: capitalize;">${m.label}</span>${m.cad ? '<span>Vence: '+m.cad+'</span>' : ''}</div>`;
             m.items.forEach(i => {
                 const colors = { extra: 'verde', festiva: 'verde', nocturna: 'verde', negativa: 'rojo', exceso: 'amarillo' };
                 cont.innerHTML += `
@@ -495,23 +449,26 @@
             try {
                 const importedData = JSON.parse(e.target.result);
                 if (!Array.isArray(importedData)) throw new Error();
-                showModal(`¿Importar ${importedData.length} registros?`, true, async () => {
-                    document.getElementById('loadingScreen').style.display = 'flex';
-                    const colRef = collection(db, 'artifacts', appId, 'users', user.uid, 'registros');
+                showModal(`¿Importar ${importedData.length} registros?`, true, () => {
                     const existingTimestamps = new Set(lista.map(i => i.timestamp));
                     let count = 0;
                     for (const item of importedData) {
                         if (!existingTimestamps.has(item.timestamp)) {
-                            const { id, ...cleanItem } = item;
-                            await addDoc(colRef, cleanItem);
+                            // Asegurar que tenga un ID en caso de ser un backup antiguo
+                            if (!item.id) item.id = Date.now().toString() + Math.random();
+                            lista.push(item);
+                            existingTimestamps.add(item.timestamp);
                             count++;
                         }
                     }
-                    document.getElementById('loadingScreen').style.display = 'none';
+                    lista.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
+                    guardarLocal();
                     showToast(`Importados ${count} registros`);
                     event.target.value = "";
                 });
-            } catch (err) { showModal("Archivo JSON no válido."); }
+            } catch (err) { 
+                showModal("Archivo JSON no válido.");
+            }
         };
         reader.readAsText(file);
     };
@@ -575,7 +532,9 @@
         doc.save(`Historial_Horas_MD_${new Date().toISOString().split('T')[0]}.pdf`);
     };
 
+    // Inicialización al cargar la página
     document.getElementById('fecha').valueAsDate = new Date();
+    mostrar();
 </script>
 </body>
 </html>
