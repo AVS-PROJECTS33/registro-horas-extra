@@ -1,379 +1,581 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<title>REGISTRO HORAS EXTRA MD</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<!-- Librerías nativas para PDF (Compatibles con todos los móviles y navegadores) -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+    <meta charset="UTF-8">
+    <title>REGISTRO HORAS MD</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Librerías para PDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+    
+    <style>
+        * { box-sizing: border-box; }
+        :root {
+            --bg-body: #f4f6f9;
+            --bg-card: #ffffff;
+            --text-main: #333333;
+            --border-color: #eeeeee;
+            --primary: #007bff;
+            --success: #28a745;
+            --danger: #dc3545;
+            --warning: #ffc107;
+            --info: #17a2b8;
+        }
 
-<style>
-* { box-sizing: border-box; }
-body { font-family: Arial; margin:0; padding:15px; background: #f4f6f9; color:#000; transition: background 0.3s,color 0.3s;}
-body.dark-mode { background: #121212; color:#e0e0e0; }
-h1 { text-align:center; text-transform: uppercase; }
-.top-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
-.card { background:white; padding:15px; border-radius:12px; margin-bottom:15px; box-shadow:0 2px 8px rgba(0,0,0,0.1); text-align:center; transition: background 0.3s, color 0.3s; }
-.top-cards .card { margin-bottom: 0; min-width: 0; }
-.card-extra { grid-column: 1 / -1; }
-.card-extra h2 { font-size: 2.5em; margin: 10px 0; }
-.dark-mode .card { background:#1e1e1e; }
-.positive { border-top:5px solid #28a745; }
-.negative { border-top:5px solid #dc3545; }
-.exceso { border-top:5px solid #ffc107; }
-input, select, button { width:100%; padding:10px; margin-top:10px; border-radius:8px; border:1px solid #ccc; transition: background 0.3s,color 0.3s; }
-.dark-mode input, .dark-mode select { background:#2a2a2a; color:#e0e0e0; border:1px solid #555; }
-.dark-mode button { background:#007bff; color:white; }
-button { background:#007bff; color:white; border:none; font-size:16px; cursor:pointer; }
-.item { border-bottom:1px solid #eee; padding:10px 0; display:flex; justify-content:space-between; align-items:center; }
-.dark-mode .item { border-color:#333; }
-.tipo { font-size:12px; font-weight:bold; }
-.verde { color:#28a745; }
-.rojo { color:#dc3545; }
-.amarillo { color:#ffc107; }
-.borrar-btn { background:#dc3545; padding:5px 10px; font-size:12px; border-radius:6px; }
-.mes-titulo { text-align:left; margin-top:20px; font-weight:bold; font-size:16px; display:flex; justify-content: space-between; }
-#modoBtn { margin-bottom:15px; }
-#mensaje { position: fixed; top: 20px; right: 20px; background: #28a745; color: white; padding: 10px 20px; border-radius: 8px; display: none; z-index: 9999; box-shadow: 0 2px 10px rgba(0,0,0,0.3);}
-#buscador { margin-bottom:10px; }
-#reiniciarAñoBtn { background:#dc3545; color:white; margin-top:20px; }
+        body.dark-mode {
+            --bg-body: #121212;
+            --bg-card: #1e1e1e;
+            --text-main: #e0e0e0;
+            --border-color: #333333;
+        }
 
-/* Nuevos estilos para la cabecera del historial y el botón de PDF */
-.header-historial { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
-.header-historial h3 { margin: 0; }
-#btnExportarPdf { background: #28a745; color: white; width: auto; margin: 0; padding: 8px 15px; font-size: 14px; border-radius: 8px; }
-#btnExportarPdf:hover { background: #218838; }
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            margin: 0; 
+            padding: 10px; 
+            background: var(--bg-body); 
+            color: var(--text-main); 
+            transition: all 0.3s ease;
+            font-size: 14px;
+        }
 
-/* Estilos del modal personalizado */
-#customModal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 10000; justify-content: center; align-items: center; }
-.modal-content { background: white; padding: 25px; border-radius: 12px; text-align: center; max-width: 320px; width: 90%; box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
-.modal-content p { margin-top: 0; margin-bottom: 20px; font-size: 16px; color: #333; }
-.modal-buttons { display: flex; gap: 10px; justify-content: center; }
-.modal-buttons button { margin: 0; padding: 10px 20px; width: auto; flex: 1; }
-#modalBtnCancel { background: #6c757d; }
-#modalBtnOk { background: #007bff; }
-.dark-mode .modal-content { background: #2a2a2a; border: 1px solid #444; }
-.dark-mode .modal-content p { color: #f0f0f0; }
-</style>
+        .header-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 5px 0 15px;
+            gap: 10px;
+        }
+
+        h1 { 
+            text-transform: uppercase; 
+            margin: 0; 
+            font-size: 1.1rem; 
+            flex-grow: 1;
+            text-align: left;
+        }
+
+        .header-btns {
+            display: flex;
+            gap: 5px;
+        }
+
+        #modoBtn, #ayudaBtn { 
+            background: #6c757d; 
+            padding: 6px 10px; 
+            font-size: 11px; 
+            width: auto; 
+            margin: 0;
+            white-space: nowrap;
+        }
+
+        #ayudaBtn {
+            background: var(--info);
+            font-weight: bold;
+            border-radius: 50%;
+            width: 28px;
+            height: 28px;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+        }
+
+        .top-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 12px; }
+        .card { 
+            background: var(--bg-card); 
+            padding: 12px; 
+            border-radius: 10px; 
+            margin-bottom: 12px; 
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06); 
+            text-align: center; 
+            transition: inherit;
+        }
+        .top-cards .card { margin-bottom: 0; padding: 10px; }
+        .card-extra { grid-column: 1 / -1; }
+        .card-extra h2 { font-size: 1.8em; margin: 5px 0; color: var(--success); }
+        .card-extra h3 { font-size: 0.8rem; }
+        .card h3 { margin: 0; font-size: 0.75rem; opacity: 0.8; text-transform: uppercase; }
+        .card h2 { font-size: 1.4em; margin: 5px 0; }
+        
+        .positive { border-top: 4px solid var(--success); }
+        .negative { border-top: 4px solid var(--danger); }
+        .exceso { border-top: 4px solid var(--warning); }
+
+        .form-group { text-align: left; margin-top: 8px; }
+        .form-group label { display: block; font-size: 0.75rem; font-weight: bold; margin-bottom: 2px; opacity: 0.7; }
+
+        input, select, button { 
+            width: 100%; 
+            padding: 10px; 
+            margin-top: 2px; 
+            border-radius: 6px; 
+            border: 1px solid #ccc; 
+            font-size: 14px;
+            appearance: none;
+        }
+        
+        .dark-mode input, .dark-mode select { 
+            background: #2a2a2a; 
+            color: #e0e0e0; 
+            border: 1px solid #444; 
+        }
+
+        button { 
+            background: var(--primary); 
+            color: white; 
+            border: none; 
+            cursor: pointer; 
+            font-weight: bold;
+            margin-top: 12px;
+        }
+
+        .item { 
+            border-bottom: 1px solid var(--border-color); 
+            padding: 10px 0; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            text-align: left;
+        }
+        .tipo { font-size: 10px; font-weight: bold; padding: 1px 5px; border-radius: 3px; display: inline-block; margin-bottom: 2px; }
+        .verde { color: var(--success); background: rgba(40, 167, 69, 0.1); }
+        .rojo { color: var(--danger); background: rgba(220, 53, 69, 0.1); }
+        .amarillo { color: #b08d05; background: rgba(255, 193, 7, 0.1); }
+        
+        .borrar-btn { background: var(--danger); width: auto; padding: 4px 10px; font-size: 11px; margin: 0; }
+        
+        .mes-titulo { 
+            background: rgba(0,0,0,0.04);
+            padding: 6px 10px;
+            border-radius: 5px;
+            margin-top: 15px; 
+            font-weight: bold; 
+            font-size: 12px; 
+            display: flex; 
+            justify-content: space-between; 
+        }
+        .dark-mode .mes-titulo { background: rgba(255,255,255,0.04); }
+
+        #mensaje { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: #333; color: white; padding: 8px 16px; border-radius: 20px; display: none; z-index: 9999; font-size: 12px; }
+
+        .header-historial { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        .btn-group-sm { display: flex; gap: 5px; }
+        .btn-group-sm button { width: auto; margin: 0; padding: 6px 10px; font-size: 11px; }
+
+        #customModal, #manualModal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 10000; justify-content: center; align-items: center; }
+        .modal-content { background: var(--bg-card); padding: 20px; border-radius: 12px; text-align: center; max-width: 320px; width: 85%; max-height: 80vh; overflow-y: auto; }
+        .modal-buttons { display: flex; gap: 8px; margin-top: 15px; }
+        .modal-buttons button { margin: 0; flex: 1; padding: 8px; font-size: 13px; }
+
+        .manual-item { text-align: left; margin-bottom: 15px; font-size: 13px; }
+        .manual-item b { color: var(--primary); display: block; margin-bottom: 3px; }
+
+        .loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-body); z-index: 11000; display: flex; flex-direction: column; justify-content: center; align-items: center; }
+        .spinner { border: 3px solid rgba(0,0,0,0.1); width: 30px; height: 30px; border-radius: 50%; border-left-color: var(--primary); animation: spin 1s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .backup-controls {
+            display: flex;
+            gap: 8px;
+            margin-top: 10px;
+        }
+        .backup-controls button {
+            background: #6c757d;
+            font-size: 10px;
+            padding: 8px;
+        }
+    </style>
 </head>
 <body>
 
-<h1>REGISTRO HORAS EXTRA MD</h1>
+<div id="loadingScreen" class="loading-overlay">
+    <div class="spinner"></div>
+    <p style="margin-top:10px; font-size: 12px;">Sincronizando...</p>
+</div>
 
-<button id="modoBtn" onclick="toggleModo()">Modo Oscuro</button>
+<div class="header-container">
+    <h1>REGISTRO HORAS MD</h1>
+    <div class="header-btns">
+        <button id="ayudaBtn" title="Ayuda" onclick="toggleManual()">?</button>
+        <button id="modoBtn" onclick="toggleModo()">Modo...</button>
+    </div>
+</div>
 
 <div class="top-cards">
-  <div class="card positive card-extra">
-    <h3>Horas Extra</h3>
-    <h2 id="totalExtra">0.00</h2>
-  </div>
-  <div class="card negative">
-    <h3>Horas Negativas</h3>
-    <h2 id="totalNeg">0.00</h2>
-  </div>
-  <div class="card exceso">
-    <h3>Horas Exceso</h3>
-    <h2 id="totalExceso">0.00</h2>
-  </div>
-</div>
-
-<div class="card">
-  <h3>Añadir registro</h3>
-  <select id="tipo">
-    <option value="extra">➕ Horas Extra</option>
-    <option value="negativa">➖ Horas Negativas</option>
-    <option value="festiva">🎉 Hora Festiva</option>
-    <option value="nocturna">🌙 Hora Nocturna</option>
-    <option value="exceso">⚠️ Horas Exceso</option>
-  </select>
-
-  <input type="number" id="horas" placeholder="Horas">
-  <input type="date" id="fecha" placeholder="Fecha">
-  <input type="text" id="desc" placeholder="Observaciones">
-
-  <button onclick="guardar()">Guardar</button>
-</div>
-
-<div class="card">
-  <div class="header-historial">
-    <h3>Historial</h3>
-    <!-- Botón verde de PDF -->
-    <button id="btnExportarPdf" onclick="exportarPDF()">📄 Exportar a PDF</button>
-  </div>
-  
-  <input type="text" id="buscador" placeholder="Buscar por tipo, fecha, mes o observaciones" oninput="mostrar()">
-  <div id="lista"></div>
-</div>
-
-<button id="reiniciarAñoBtn" onclick="reiniciarAno()">Reiniciar Año</button>
-
-<div id="mensaje">Año reiniciado correctamente ✅</div>
-
-<div style="text-align: center; margin-top: 20px; padding-bottom: 20px; font-size: 13px; opacity: 0.6; font-weight: bold;">
-  Creditos: AVS ver 1.0
-</div>
-
-<!-- Modal HTML -->
-<div id="customModal">
-  <div class="modal-content">
-    <p id="modalText"></p>
-    <div class="modal-buttons">
-      <button id="modalBtnCancel">Cancelar</button>
-      <button id="modalBtnOk">Aceptar</button>
+    <div class="card positive card-extra">
+        <h3>Extra Acumuladas</h3>
+        <h2 id="totalExtra">0.00</h2>
     </div>
-  </div>
+    <div class="card negative">
+        <h3>Negativas</h3>
+        <h2 id="totalNeg">0.00</h2>
+    </div>
+    <div class="card exceso">
+        <h3>Exceso</h3>
+        <h2 id="totalExceso">0.00</h2>
+    </div>
 </div>
 
-<script>
-let lista = JSON.parse(localStorage.getItem("horas")) || [];
+<div class="card">
+    <h3 style="text-align: left; margin-bottom: 5px;">Nuevo Registro</h3>
+    
+    <div class="form-group">
+        <label>Tipo de hora</label>
+        <select id="tipo">
+            <option value="extra">➕ Extra (x1.75)</option>
+            <option value="negativa">➖ Negativa (x1.0)</option>
+            <option value="festiva">🎉 Festiva (x2.25)</option>
+            <option value="nocturna">🌙 Nocturna (x2.0)</option>
+            <option value="exceso">⚠️ Exceso (x1.0)</option>
+        </select>
+    </div>
 
-// Lógica del Modal Personalizado
-let modalCallback = null;
-function showModal(mensaje, isConfirm = false, callback = null) {
-  document.getElementById('modalText').innerText = mensaje;
-  document.getElementById('customModal').style.display = 'flex';
-  
-  if (isConfirm) {
-    document.getElementById('modalBtnCancel').style.display = 'block';
-    modalCallback = callback;
-  } else {
-    document.getElementById('modalBtnCancel').style.display = 'none';
-    modalCallback = null;
-  }
-}
+    <div class="form-group">
+        <label>Horas</label>
+        <input type="number" id="horas" placeholder="0.00" step="0.01">
+    </div>
 
-function closeModal(result) {
-  document.getElementById('customModal').style.display = 'none';
-  const cb = modalCallback; // Guardamos el callback temporalmente
-  modalCallback = null;     // Limpiamos antes de ejecutar por si se lanza otro modal
-  if (result && cb) {
-    cb();
-  }
-}
+    <div class="form-group">
+        <label>Fecha</label>
+        <input type="date" id="fecha">
+    </div>
 
-document.getElementById('modalBtnOk').onclick = () => closeModal(true);
-document.getElementById('modalBtnCancel').onclick = () => closeModal(false);
+    <div class="form-group">
+        <label>Observaciones</label>
+        <input type="text" id="desc" placeholder="Nota rápida...">
+    </div>
 
-// Modo claro/oscuro
-if(localStorage.getItem("modo")==="dark") document.body.classList.add("dark-mode");
-function toggleModo(){
-  document.body.classList.toggle("dark-mode");
-  const modo = document.body.classList.contains("dark-mode") ? "dark":"light";
-  localStorage.setItem("modo",modo);
-  document.getElementById("modoBtn").innerText = modo==="dark"?"Modo Claro":"Modo Oscuro";
-}
+    <button onclick="guardar()">GUARDAR</button>
+</div>
 
-// Guardar registro
-function guardar(){
-  let horasInput = Number(document.getElementById("horas").value);
-  const desc = document.getElementById("desc").value;
-  const fecha = document.getElementById("fecha").value;
-  const tipo = document.getElementById("tipo").value;
-  if(!horasInput){ showModal("Introduce las horas"); return;}
-  if(!fecha){ showModal("La fecha es obligatoria"); return; }
-
-  let horasFinal = horasInput;
-  if(horasInput>0){
-    if(tipo==="extra") horasFinal = horasInput*1.75;
-    else if(tipo==="festiva") horasFinal = horasInput*2.25;
-    else if(tipo==="nocturna") horasFinal = horasInput*2;
-  }
-
-  let tipoFinal = (tipo==="extra"||tipo==="festiva"||tipo==="nocturna")?"extra":tipo;
-  if(tipo==="exceso") tipoFinal="exceso";
-  lista.push({ horas:horasFinal, desc, fecha, tipo:tipoFinal, tipoOriginal:tipo });
-  localStorage.setItem("horas", JSON.stringify(lista));
-  document.getElementById("horas").value="";
-  document.getElementById("desc").value="";
-  document.getElementById("fecha").value="";
-  mostrar();
-}
-
-// Borrar registro individual
-function borrarRegistro(index){
-  showModal("¿Seguro que quieres borrar este registro?", true, () => {
-    lista.splice(index,1);
-    localStorage.setItem("horas", JSON.stringify(lista));
-    mostrar();
-  });
-}
-
-// Reiniciar Año
-function reiniciarAno(){
-  const añoActual = new Date().getFullYear();
-  // Primera confirmación
-  showModal(`¿Seguro que quieres reiniciar todos los registros del año ${añoActual}?`, true, () => {
-    // Segunda confirmación (Doble confirmación)
-    setTimeout(() => {
-      showModal(`¡ATENCIÓN! Esta acción es irreversible.\n¿Estás ABSOLUTAMENTE seguro de borrar el año ${añoActual}?`, true, () => {
-        lista = lista.filter(item=>{
-          if(!item.fecha) return true;
-          const fechaObj = new Date(item.fecha);
-          return fechaObj.getFullYear() !== añoActual;
-        });
-        localStorage.setItem("horas", JSON.stringify(lista));
-        mostrar();
-
-        const msg = document.getElementById("mensaje");
-        msg.style.display = "block";
-        setTimeout(()=>{ msg.style.display="none"; }, 3000);
-      });
-    }, 150); // Pequeño retraso visual para que se note el cambio de ventana
-  });
-}
-
-// Exportar a PDF (Método Nativo con jsPDF)
-function exportarPDF() {
-  if (lista.length === 0) {
-    showModal("No hay registros en el historial para exportar.");
-    return;
-  }
-
-  // Inicializar jsPDF
-  const { jsPDF } = window.jspdf;
-  const doc = new jsPDF();
-
-  // Título del documento
-  doc.setFontSize(16);
-  doc.setTextColor(0, 0, 0);
-  doc.text("Registro de Horas Extra MD", 14, 20);
-
-  // Agregar resumen de horas
-  doc.setFontSize(11);
-  const totalEx = document.getElementById("totalExtra").innerText;
-  const totalNeg = document.getElementById("totalNeg").innerText;
-  const totalExc = document.getElementById("totalExceso").innerText;
-
-  doc.setTextColor(40, 167, 69); // Verde
-  doc.text(`Extra: ${totalEx}`, 14, 30);
-  
-  doc.setTextColor(220, 53, 69); // Rojo
-  doc.text(`Negativas: ${totalNeg}`, 70, 30);
-  
-  doc.setTextColor(211, 158, 0); // Amarillo Oscuro
-  doc.text(`Exceso: ${totalExc}`, 130, 30);
-
-  // Ordenar lista temporalmente por fecha para el PDF
-  let listaOrdenada = [...lista].sort((a, b) => new Date(a.fecha) - new Date(b.fecha));
-
-  // Preparar los datos para la tabla
-  const tableData = listaOrdenada.map(item => {
-     let fechaFormat = "Sin fecha";
-     if(item.fecha){
-       const f = new Date(item.fecha);
-       const dia = String(f.getDate()).padStart(2,'0');
-       const mes = String(f.getMonth()+1).padStart(2,'0');
-       const año = f.getFullYear();
-       fechaFormat = `${dia}/${mes}/${año}`;
-     }
-     return [fechaFormat, item.tipoOriginal.toUpperCase(), item.horas.toFixed(2), item.desc];
-  });
-
-  // Generar tabla limpia y profesional
-  doc.autoTable({
-    startY: 35,
-    head: [['Fecha', 'Tipo', 'Horas', 'Observaciones']],
-    body: tableData,
-    theme: 'striped',
-    headStyles: { fillColor: [0, 123, 255] }, // Cabecera Azul
-    didParseCell: function(data) {
-      if (data.section === 'body' && data.column.index === 1) {
-        // Dar color al tipo de hora en la tabla para que se vea claro
-        const tipo = data.cell.raw;
-        if (tipo === 'NEGATIVA') {
-          data.cell.styles.textColor = [220, 53, 69]; // Rojo
-        } else if (tipo === 'EXCESO') {
-          data.cell.styles.textColor = [211, 158, 0]; // Amarillo
-        } else {
-          data.cell.styles.textColor = [40, 167, 69]; // Verde
-        }
-      }
-    }
-  });
-
-  // Descargar el archivo
-  doc.save('Historial_Horas_Extra.pdf');
-}
-
-// Mostrar historial
-function mostrar(){
-  const cont = document.getElementById("lista");
-  cont.innerHTML="";
-  let totalExtra=0, totalNeg=0, totalExceso=0;
-  const meses = {};
-  const filtro = document.getElementById("buscador").value.toLowerCase();
-
-  lista.forEach((item,index)=>{
-    if(item.tipo==="extra") totalExtra+=item.horas;
-    if(item.tipo==="negativa") totalNeg+=item.horas;
-    if(item.tipo==="exceso") totalExceso+=item.horas;
-    const dateObj = item.fecha ? new Date(item.fecha) : null;
-    const mesKey = dateObj ? `${dateObj.getFullYear()}-${dateObj.getMonth()+1}` : "Sin fecha";
-    if(!meses[mesKey]) meses[mesKey]=[];
-    meses[mesKey].push({...item,index});
-  });
-
-  Object.keys(meses).sort().forEach(mesKey=>{
-    let displayMes="Sin fecha", caducaText="";
-    if(mesKey!=="Sin fecha"){
-      const parts=mesKey.split("-");
-      const year = parseInt(parts[0]);
-      const month = parseInt(parts[1])-1;
-      const mesNombre = new Date(year,month).toLocaleString('es-ES',{month:'long'});
-      displayMes = `${mesNombre} ${year}`;
-      let caduca = new Date(year, month+4,1);
-      const caducaStr = caduca.toLocaleString('es-ES',{month:'long',year:'numeric'});
-      const contieneExceso = meses[mesKey].some(item=>item.tipo==="exceso");
-      caducaText = contieneExceso ? "" : `Caduca: ${caducaStr}`;
-    }
-
-    cont.innerHTML+=`<div class="mes-titulo"><span>${displayMes}</span><span>${caducaText}</span></div>`;
-
-    meses[mesKey].forEach(item=>{
-      let fechaFormat = "Sin fecha";
-      let mesAñoStr="";
-      if(item.fecha){
-        const f = new Date(item.fecha);
-        const dia = String(f.getDate()).padStart(2,'0');
-        const mes = String(f.getMonth()+1).padStart(2,'0');
-        const año = f.getFullYear();
-        fechaFormat = `${dia}/${mes}/${año}`;
-        mesAñoStr = f.toLocaleString('es-ES',{month:'long',year:'numeric'});
-      }
-
-      if(filtro){
-        if(!item.desc.toLowerCase().includes(filtro) &&
-           !item.tipoOriginal.toLowerCase().includes(filtro) &&
-           !fechaFormat.includes(filtro) &&
-           !mesAñoStr.toLowerCase().includes(filtro)) return;
-      }
-
-      let label='', claseColor='';
-      if(item.tipoOriginal==='extra') { label='EXTRA'; claseColor='verde'; }
-      if(item.tipoOriginal==='negativa') { label='NEGATIVA'; claseColor='rojo'; }
-      if(item.tipoOriginal==='festiva') { label='FESTIVA'; claseColor='verde'; }
-      if(item.tipoOriginal==='nocturna') { label='NOCTURNA'; claseColor='verde'; }
-      if(item.tipoOriginal==='exceso') { label='EXCESO'; claseColor='amarillo'; }
-
-      cont.innerHTML+=`
-      <div class="item">
-        <div>
-          <span class="tipo ${claseColor}">${label}</span><br>
-          <b>${item.horas.toFixed(2)} horas</b><br>
-          <small>${item.desc} - ${fechaFormat}</small>
+<div class="card">
+    <div class="header-historial">
+        <h3>Historial</h3>
+        <div class="btn-group-sm">
+            <button style="background: var(--success);" onclick="exportarPDF()">📄 PDF</button>
         </div>
-        <button class="borrar-btn" onclick="borrarRegistro(${item.index})">Borrar</button>
-      </div>`;
+    </div>
+    <input type="text" id="buscador" placeholder="Buscar..." oninput="mostrar()" style="padding: 8px; font-size: 13px;">
+    
+    <div class="backup-controls">
+        <button onclick="exportarJSON()">💾 Exportar JSON</button>
+        <button onclick="document.getElementById('fileInput').click()">📂 Importar JSON</button>
+        <input type="file" id="fileInput" style="display:none" accept=".json" onchange="importarJSON(event)">
+    </div>
+
+    <div id="lista"></div>
+</div>
+
+<button style="background:#dc3545; margin-bottom: 30px; padding: 8px; font-size: 12px; width: auto; margin: 0 auto 40px; display: block;" onclick="reiniciarAno()">Reiniciar Año</button>
+
+<div id="mensaje">✅</div>
+
+<div style="text-align: center; margin-bottom: 30px; font-size: 11px; opacity: 0.5;">
+    ID: <span id="userIdDisplay">...</span><br>
+    AVS v2.8
+</div>
+
+<!-- Modal de Confirmación -->
+<div id="customModal">
+    <div class="modal-content">
+        <p id="modalText" style="font-size: 14px;"></p>
+        <div class="modal-buttons">
+            <button id="modalBtnCancel">No</button>
+            <button id="modalBtnOk">Sí</button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de Manual/Ayuda -->
+<div id="manualModal">
+    <div class="modal-content">
+        <h3 style="margin-top:0">Manual de Uso</h3>
+        
+        <div class="manual-item">
+            <b>🚀 Multiplicadores</b>
+            Las horas se calculan automáticamente: Extra (1.75), Nocturna (2.0) y Festiva (2.25). Negativas y Excesos son 1:1.
+        </div>
+
+        <div class="manual-item">
+            <b>📄 Informe PDF</b>
+            El botón "PDF" genera un documento descargable con todos tus registros visibles. Es ideal para tener un respaldo físico o enviar un resumen de tus horas por correo.
+        </div>
+
+        <div class="manual-item">
+            <b>⏳ Vencimiento</b>
+            Las horas extra acumuladas muestran una fecha de vencimiento estimada (4 meses después del registro).
+        </div>
+
+        <div class="manual-item">
+            <b>💾 Copias de Seguridad</b>
+            Usa "Exportar JSON" para descargar un archivo con toda tu base de datos. Si cambias de dispositivo, usa "Importar" para cargar ese archivo y recuperar todo.
+        </div>
+
+        <div class="manual-item">
+            <b>🔍 Buscador</b>
+            Filtra rápidamente por mes, año o palabras clave en tus notas. Las horas se muestran como: Horas reales (Total calculado).
+        </div>
+
+        <button onclick="toggleManual()" style="background: var(--info); margin-top:10px">ENTENDIDO</button>
+    </div>
+</div>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+    import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+    import { getFirestore, collection, doc, addDoc, deleteDoc, onSnapshot, query, getDocs, writeBatch } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+    const firebaseConfig = JSON.parse(__firebase_config);
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+    const appId = typeof __app_id !== 'undefined' ? __app_id : 'horas-extra-md-v1';
+
+    let user = null;
+    let lista = [];
+
+    const initAuth = async () => {
+        try {
+            if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                await signInWithCustomToken(auth, __initial_auth_token);
+            } else {
+                await signInAnonymously(auth);
+            }
+        } catch (e) { console.error(e); }
+    };
+    initAuth();
+
+    onAuthStateChanged(auth, (u) => {
+        user = u;
+        if (user) {
+            document.getElementById('userIdDisplay').innerText = user.uid;
+            suscribirDatos();
+        }
     });
-  });
 
-  document.getElementById("totalExtra").innerText=totalExtra.toFixed(2);
-  document.getElementById("totalNeg").innerText=totalNeg.toFixed(2);
-  document.getElementById("totalExceso").innerText=totalExceso.toFixed(2);
-}
+    function suscribirDatos() {
+        if (!user) return;
+        const colRef = collection(db, 'artifacts', appId, 'users', user.uid, 'registros');
+        onSnapshot(colRef, (snapshot) => {
+            lista = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            lista.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
+            mostrar();
+            document.getElementById('loadingScreen').style.display = 'none';
+        }, (error) => { console.error(error); });
+    }
 
-mostrar();
+    window.guardar = async () => {
+        if (!user) return;
+        const hIn = parseFloat(document.getElementById("horas").value);
+        const desc = document.getElementById("desc").value || "-";
+        const fecha = document.getElementById("fecha").value;
+        const tipo = document.getElementById("tipo").value;
+
+        // Corregido: Permitir horas negativas si el tipo es 'negativa' o el usuario pone el signo '-'
+        const isValid = tipo === "negativa" ? !isNaN(hIn) && hIn !== 0 : !isNaN(hIn) && hIn !== 0;
+
+        if (!isValid) { showModal("Indica una cantidad de horas válida."); return; }
+        if (!fecha) { showModal("La fecha es necesaria."); return; }
+
+        let factor = 1;
+        if (tipo === "extra") factor = 1.75;
+        else if (tipo === "festiva") factor = 2.25;
+        else if (tipo === "nocturna") factor = 2.0;
+
+        // Si es tipo negativa, nos aseguramos que el valor guardado sea absoluto para restarlo después 
+        // o lo guardamos directamente. Aquí el sistema espera que las negativas sean positivas en magnitud pero marcadas como 'negativa'.
+        let valFinal = hIn;
+        if (tipo === "negativa" && valFinal < 0) valFinal = Math.abs(valFinal);
+
+        try {
+            await addDoc(collection(db, 'artifacts', appId, 'users', user.uid, 'registros'), {
+                horas: valFinal * factor,
+                horasOriginales: valFinal,
+                desc,
+                fecha,
+                tipo: (tipo === "negativa" || tipo === "exceso") ? tipo : "extra",
+                tipoOriginal: tipo,
+                timestamp: Date.now()
+            });
+            document.getElementById("horas").value = "";
+            document.getElementById("desc").value = "";
+            showToast("Guardado");
+        } catch (e) { showModal("Error al guardar."); }
+    };
+
+    window.borrarRegistro = (docId) => {
+        showModal("¿Borrar registro?", true, async () => {
+            try { await deleteDoc(doc(db, 'artifacts', appId, 'users', user.uid, 'registros', docId)); } 
+            catch (e) { console.error(e); }
+        });
+    };
+
+    window.reiniciarAno = () => {
+        const year = new Date().getFullYear();
+        // Primera confirmación
+        showModal(`¿Deseas borrar TODOS los registros del año ${year}?`, true, () => {
+            // Segunda confirmación de seguridad
+            setTimeout(() => {
+                showModal(`⚠️ ESTA ACCIÓN NO SE PUEDE DESHACER. ¿Estás realmente seguro de borrar el año ${year}?`, true, async () => {
+                    const q = query(collection(db, 'artifacts', appId, 'users', user.uid, 'registros'));
+                    const snap = await getDocs(q);
+                    const targets = snap.docs.filter(d => new Date(d.data().fecha).getFullYear() === year);
+                    await Promise.all(targets.map(d => deleteDoc(d.ref)));
+                    showToast("Año borrado por completo");
+                });
+            }, 300);
+        });
+    };
+
+    window.mostrar = () => {
+        const cont = document.getElementById("lista");
+        cont.innerHTML = "";
+        let tE = 0, tN = 0, tX = 0;
+        const filter = document.getElementById("buscador").value.toLowerCase();
+        const meses = {};
+
+        lista.forEach(item => {
+            const f = new Date(item.fecha);
+            const fFmt = `${String(f.getDate()).padStart(2,'0')}/${String(f.getMonth()+1).padStart(2,'0')}/${f.getFullYear()}`;
+            if (filter && !item.desc.toLowerCase().includes(filter) && !fFmt.includes(filter)) return;
+
+            if (item.tipo === "extra") tE += item.horas;
+            if (item.tipo === "negativa") tN += item.horas;
+            if (item.tipo === "exceso") tX += item.horas;
+
+            const mKey = `${f.getFullYear()}-${f.getMonth()+1}`;
+            if (!meses[mKey]) meses[mKey] = { label: f.toLocaleString('es-ES', { month: 'long', year: 'numeric' }), items: [], cad: "" };
+            if (item.tipo === "extra") {
+                let c = new Date(f.getFullYear(), f.getMonth() + 4, 1);
+                meses[mKey].cad = c.toLocaleString('es-ES', { month: 'short', year: '2-digit' });
+            }
+            meses[mKey].items.push({ ...item, fFmt });
+        });
+
+        Object.keys(meses).sort((a,b) => b.localeCompare(a)).forEach(k => {
+            const m = meses[k];
+            cont.innerHTML += `<div class="mes-titulo"><span>${m.label}</span>${m.cad ? '<span>Vence: '+m.cad+'</span>' : ''}</div>`;
+            m.items.forEach(i => {
+                const colors = { extra: 'verde', festiva: 'verde', nocturna: 'verde', negativa: 'rojo', exceso: 'amarillo' };
+                cont.innerHTML += `
+                    <div class="item">
+                        <div style="max-width: 70%">
+                            <span class="tipo ${colors[i.tipoOriginal]}">${i.tipoOriginal.toUpperCase()}</span><br>
+                            <b>${i.horasOriginales}h</b> <small style="opacity:0.6">(${i.horas.toFixed(2)}h total)</small><br>
+                            <small style="font-size: 11px; display:block; margin-top:2px">${i.fFmt} - ${i.desc}</small>
+                        </div>
+                        <button class="borrar-btn" onclick="borrarRegistro('${i.id}')">Borrar</button>
+                    </div>`;
+            });
+        });
+
+        document.getElementById("totalExtra").innerText = tE.toFixed(2);
+        document.getElementById("totalNeg").innerText = tN.toFixed(2);
+        document.getElementById("totalExceso").innerText = tX.toFixed(2);
+    };
+
+    window.exportarJSON = () => {
+        if (lista.length === 0) { showModal("No hay datos para exportar."); return; }
+        const dataStr = JSON.stringify(lista, null, 2);
+        const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
+        const exportFileDefaultName = `Backup_Horas_MD_${new Date().toISOString().split('T')[0]}.json`;
+        const linkElement = document.createElement('a');
+        linkElement.setAttribute('href', dataUri);
+        linkElement.setAttribute('download', exportFileDefaultName);
+        linkElement.click();
+    };
+
+    window.importarJSON = (event) => {
+        const file = event.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = async (e) => {
+            try {
+                const importedData = JSON.parse(e.target.result);
+                if (!Array.isArray(importedData)) throw new Error();
+                showModal(`¿Importar ${importedData.length} registros?`, true, async () => {
+                    document.getElementById('loadingScreen').style.display = 'flex';
+                    const colRef = collection(db, 'artifacts', appId, 'users', user.uid, 'registros');
+                    const existingTimestamps = new Set(lista.map(i => i.timestamp));
+                    let count = 0;
+                    for (const item of importedData) {
+                        if (!existingTimestamps.has(item.timestamp)) {
+                            const { id, ...cleanItem } = item;
+                            await addDoc(colRef, cleanItem);
+                            count++;
+                        }
+                    }
+                    document.getElementById('loadingScreen').style.display = 'none';
+                    showToast(`Importados ${count} registros`);
+                    event.target.value = "";
+                });
+            } catch (err) { showModal("Archivo JSON no válido."); }
+        };
+        reader.readAsText(file);
+    };
+
+    window.toggleModo = () => {
+        document.body.classList.toggle("dark-mode");
+        const isDark = document.body.classList.contains("dark-mode");
+        localStorage.setItem("modo", isDark ? "dark" : "light");
+        updateModoBtnLabel();
+    };
+
+    window.toggleManual = () => {
+        const m = document.getElementById("manualModal");
+        m.style.display = (m.style.display === "flex") ? "none" : "flex";
+    };
+
+    function updateModoBtnLabel() {
+        const isDark = document.body.classList.contains("dark-mode");
+        document.getElementById("modoBtn").innerText = isDark ? "☀️ Claro" : "🌙 Oscuro";
+    }
+
+    if (localStorage.getItem("modo") === "dark") {
+        document.body.classList.add("dark-mode");
+    }
+    updateModoBtnLabel();
+
+    function showToast(t) {
+        const m = document.getElementById("mensaje");
+        m.innerText = t + " ✅"; m.style.display = "block";
+        setTimeout(() => m.style.display = "none", 2000);
+    }
+
+    let mCb = null;
+    window.showModal = (msg, conf = false, cb = null) => {
+        document.getElementById("modalText").innerText = msg;
+        document.getElementById("customModal").style.display = "flex";
+        document.getElementById("modalBtnCancel").style.display = conf ? "block" : "none";
+        mCb = cb;
+    };
+    document.getElementById("modalBtnOk").onclick = () => {
+        document.getElementById("customModal").style.display = "none";
+        if (mCb) mCb();
+    };
+    document.getElementById("modalBtnCancel").onclick = () => {
+        document.getElementById("customModal").style.display = "none";
+        mCb = null;
+    };
+
+    window.exportarPDF = () => {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+        doc.text("REGISTRO HORAS MD", 14, 20);
+        const data = lista.map(i => [i.fecha, i.tipoOriginal.toUpperCase(), i.horasOriginales, i.horas.toFixed(2), i.desc]);
+        doc.autoTable({ 
+            startY: 30, 
+            head: [['Fecha', 'Tipo', 'Horas Base', 'Horas Total', 'Observaciones']], 
+            body: data,
+            theme: 'striped',
+            headStyles: { fillColor: [0, 123, 255] }
+        });
+        doc.save(`Historial_Horas_MD_${new Date().toISOString().split('T')[0]}.pdf`);
+    };
+
+    document.getElementById('fecha').valueAsDate = new Date();
 </script>
 </body>
 </html>
