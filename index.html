@@ -265,7 +265,7 @@
 
 <div style="text-align: center; margin-bottom: 30px; font-size: 11px; opacity: 0.5;">
     Almacenamiento Local<br>
-    AVS v2.9
+    AVS v3.2
 </div>
 
 <!-- Modal de Confirmación -->
@@ -290,23 +290,13 @@
         </div>
 
         <div class="manual-item">
-            <b>📄 Informe PDF</b>
-            El botón "PDF" genera un documento descargable con todos tus registros visibles. Es ideal para tener un respaldo físico o enviar un resumen de tus horas por correo.
+            <b>➖ Horas Negativas</b>
+            Al registrar horas "Negativas", estas se suman únicamente a su propio contador (apartado Negativas) con factor x1.0 y no alteran las Extra Acumuladas.
         </div>
 
         <div class="manual-item">
-            <b>⏳ Vencimiento</b>
-            Las horas extra acumuladas muestran una fecha de vencimiento estimada (4 meses después del registro).
-        </div>
-
-        <div class="manual-item">
-            <b>💾 Copias de Seguridad</b>
-            Usa "Exportar JSON" para descargar un archivo con toda tu base de datos. Si cambias de dispositivo, usa "Importar" para cargar ese archivo y recuperar todo.
-        </div>
-
-        <div class="manual-item">
-            <b>🔍 Buscador</b>
-            Filtra rápidamente por mes, año o palabras clave en tus notas. Las horas se muestran como: Horas reales (Total calculado).
+            <b>📉 Ajustes Negativos</b>
+            Si introduces un valor negativo (ej: -1.0) en Extra, Festiva o Nocturna, el sistema restará el valor exacto (x1.0) sin aplicar multiplicadores, permitiendo correcciones manuales precisas.
         </div>
 
         <button onclick="toggleManual()" style="background: var(--info); margin-top:10px">ENTENDIDO</button>
@@ -314,10 +304,8 @@
 </div>
 
 <script>
-    // Inicializar lista desde el almacenamiento local
     let lista = JSON.parse(localStorage.getItem('horas_md_data')) || [];
 
-    // Función auxiliar para guardar en localStorage y actualizar la vista
     function guardarLocal() {
         localStorage.setItem('horas_md_data', JSON.stringify(lista));
         mostrar();
@@ -327,29 +315,30 @@
         const hIn = parseFloat(document.getElementById("horas").value);
         const desc = document.getElementById("desc").value || "-";
         const fecha = document.getElementById("fecha").value;
-        const tipo = document.getElementById("tipo").value;
+        const tipoInput = document.getElementById("tipo").value;
 
-        const isValid = !isNaN(hIn) && hIn !== 0;
-
-        if (!isValid) { showModal("Indica una cantidad de horas válida."); return; }
+        if (isNaN(hIn) || hIn === 0) { showModal("Indica una cantidad de horas válida."); return; }
         if (!fecha) { showModal("La fecha es necesaria."); return; }
 
-        let factor = 1;
-        if (tipo === "extra") factor = 1.75;
-        else if (tipo === "festiva") factor = 2.25;
-        else if (tipo === "nocturna") factor = 2.0;
-
-        let valFinal = hIn;
-        if (tipo === "negativa" && valFinal < 0) valFinal = Math.abs(valFinal);
+        let factor = 1.0;
+        
+        // REGLA: Si el número es positivo, se aplican multiplicadores.
+        // Si el número es negativo, el factor siempre es 1.0 para restar el valor exacto.
+        if (hIn > 0) {
+            if (tipoInput === "extra") factor = 1.75;
+            else if (tipoInput === "festiva") factor = 2.25;
+            else if (tipoInput === "nocturna") factor = 2.0;
+        } else {
+            factor = 1.0; // Resta exacta para valores negativos
+        }
 
         const nuevoRegistro = {
             id: Date.now().toString(),
-            horas: valFinal * factor,
-            horasOriginales: valFinal,
-            desc,
-            fecha,
-            tipo: (tipo === "negativa" || tipo === "exceso") ? tipo : "extra",
-            tipoOriginal: tipo,
+            horasCalculadas: hIn * factor,
+            horasOriginales: hIn,
+            desc: desc,
+            fecha: fecha,
+            tipoOriginal: tipoInput,
             timestamp: Date.now()
         };
 
@@ -374,10 +363,10 @@
         const year = new Date().getFullYear();
         showModal(`¿Deseas borrar TODOS los registros del año ${year}?`, true, () => {
             setTimeout(() => {
-                showModal(`⚠️ ESTA ACCIÓN NO SE PUEDE DESHACER. ¿Estás realmente seguro de borrar el año ${year}?`, true, () => {
+                showModal(`⚠️ ESTA ACCIÓN NO SE PUEDE DESHACER.`, true, () => {
                     lista = lista.filter(item => new Date(item.fecha).getFullYear() !== year);
                     guardarLocal();
-                    showToast("Año borrado por completo");
+                    showToast("Año borrado");
                 });
             }, 300);
         });
@@ -386,38 +375,53 @@
     window.mostrar = () => {
         const cont = document.getElementById("lista");
         cont.innerHTML = "";
-        let tE = 0, tN = 0, tX = 0;
+        let tExtraAcumulado = 0;
+        let tNegativasVisual = 0;
+        let tExceso = 0;
+        
         const filter = document.getElementById("buscador").value.toLowerCase();
         const meses = {};
 
         lista.forEach(item => {
             const f = new Date(item.fecha);
             const fFmt = `${String(f.getDate()).padStart(2,'0')}/${String(f.getMonth()+1).padStart(2,'0')}/${f.getFullYear()}`;
+            
             if (filter && !item.desc.toLowerCase().includes(filter) && !fFmt.includes(filter)) return;
 
-            if (item.tipo === "extra") tE += item.horas;
-            if (item.tipo === "negativa") tN += item.horas;
-            if (item.tipo === "exceso") tX += item.horas;
+            if (item.tipoOriginal === "negativa") {
+                tNegativasVisual += item.horasCalculadas; 
+            } else if (item.tipoOriginal === "exceso") {
+                tExceso += item.horasCalculadas;
+            } else {
+                tExtraAcumulado += item.horasCalculadas;
+            }
 
             const mKey = `${f.getFullYear()}-${String(f.getMonth()+1).padStart(2,'0')}`;
-            if (!meses[mKey]) meses[mKey] = { label: f.toLocaleString('es-ES', { month: 'long', year: 'numeric' }), items: [], cad: "" };
-            if (item.tipo === "extra") {
+            if (!meses[mKey]) {
+                meses[mKey] = { 
+                    label: f.toLocaleString('es-ES', { month: 'long', year: 'numeric' }), 
+                    items: [], 
+                    vence: "" 
+                };
+            }
+            
+            if (item.tipoOriginal !== "negativa" && item.tipoOriginal !== "exceso") {
                 let c = new Date(f.getFullYear(), f.getMonth() + 4, 1);
-                meses[mKey].cad = c.toLocaleString('es-ES', { month: 'short', year: '2-digit' });
+                meses[mKey].vence = c.toLocaleString('es-ES', { month: 'short', year: '2-digit' });
             }
             meses[mKey].items.push({ ...item, fFmt });
         });
 
         Object.keys(meses).sort((a,b) => b.localeCompare(a)).forEach(k => {
             const m = meses[k];
-            cont.innerHTML += `<div class="mes-titulo"><span style="text-transform: capitalize;">${m.label}</span>${m.cad ? '<span>Vence: '+m.cad+'</span>' : ''}</div>`;
+            cont.innerHTML += `<div class="mes-titulo"><span style="text-transform: capitalize;">${m.label}</span>${m.vence ? '<span>Vence: '+m.vence+'</span>' : ''}</div>`;
             m.items.forEach(i => {
                 const colors = { extra: 'verde', festiva: 'verde', nocturna: 'verde', negativa: 'rojo', exceso: 'amarillo' };
                 cont.innerHTML += `
                     <div class="item">
                         <div style="max-width: 70%">
                             <span class="tipo ${colors[i.tipoOriginal]}">${i.tipoOriginal.toUpperCase()}</span><br>
-                            <b>${i.horasOriginales}h</b> <small style="opacity:0.6">(${i.horas.toFixed(2)}h total)</small><br>
+                            <b>${i.horasOriginales}h</b> <small style="opacity:0.6">(${i.horasCalculadas.toFixed(2)}h total)</small><br>
                             <small style="font-size: 11px; display:block; margin-top:2px">${i.fFmt} - ${i.desc}</small>
                         </div>
                         <button class="borrar-btn" onclick="borrarRegistro('${i.id}')">Borrar</button>
@@ -425,19 +429,18 @@
             });
         });
 
-        document.getElementById("totalExtra").innerText = tE.toFixed(2);
-        document.getElementById("totalNeg").innerText = tN.toFixed(2);
-        document.getElementById("totalExceso").innerText = tX.toFixed(2);
+        document.getElementById("totalExtra").innerText = tExtraAcumulado.toFixed(2);
+        document.getElementById("totalNeg").innerText = tNegativasVisual.toFixed(2);
+        document.getElementById("totalExceso").innerText = tExceso.toFixed(2);
     };
 
     window.exportarJSON = () => {
-        if (lista.length === 0) { showModal("No hay datos para exportar."); return; }
+        if (lista.length === 0) return;
         const dataStr = JSON.stringify(lista, null, 2);
         const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
-        const exportFileDefaultName = `Backup_Horas_MD_${new Date().toISOString().split('T')[0]}.json`;
         const linkElement = document.createElement('a');
         linkElement.setAttribute('href', dataUri);
-        linkElement.setAttribute('download', exportFileDefaultName);
+        linkElement.setAttribute('download', `Copia_Horas_${new Date().toISOString().split('T')[0]}.json`);
         linkElement.click();
     };
 
@@ -445,30 +448,13 @@
         const file = event.target.files[0];
         if (!file) return;
         const reader = new FileReader();
-        reader.onload = async (e) => {
+        reader.onload = (e) => {
             try {
                 const importedData = JSON.parse(e.target.result);
-                if (!Array.isArray(importedData)) throw new Error();
-                showModal(`¿Importar ${importedData.length} registros?`, true, () => {
-                    const existingTimestamps = new Set(lista.map(i => i.timestamp));
-                    let count = 0;
-                    for (const item of importedData) {
-                        if (!existingTimestamps.has(item.timestamp)) {
-                            // Asegurar que tenga un ID en caso de ser un backup antiguo
-                            if (!item.id) item.id = Date.now().toString() + Math.random();
-                            lista.push(item);
-                            existingTimestamps.add(item.timestamp);
-                            count++;
-                        }
-                    }
-                    lista.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
-                    guardarLocal();
-                    showToast(`Importados ${count} registros`);
-                    event.target.value = "";
-                });
-            } catch (err) { 
-                showModal("Archivo JSON no válido.");
-            }
+                lista = importedData;
+                guardarLocal();
+                showToast("Importado");
+            } catch (err) { showModal("Error al importar."); }
         };
         reader.readAsText(file);
     };
@@ -490,9 +476,7 @@
         document.getElementById("modoBtn").innerText = isDark ? "☀️ Claro" : "🌙 Oscuro";
     }
 
-    if (localStorage.getItem("modo") === "dark") {
-        document.body.classList.add("dark-mode");
-    }
+    if (localStorage.getItem("modo") === "dark") document.body.classList.add("dark-mode");
     updateModoBtnLabel();
 
     function showToast(t) {
@@ -514,25 +498,21 @@
     };
     document.getElementById("modalBtnCancel").onclick = () => {
         document.getElementById("customModal").style.display = "none";
-        mCb = null;
     };
 
     window.exportarPDF = () => {
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF();
         doc.text("REGISTRO HORAS MD", 14, 20);
-        const data = lista.map(i => [i.fecha, i.tipoOriginal.toUpperCase(), i.horasOriginales, i.horas.toFixed(2), i.desc]);
+        const data = lista.map(i => [i.fecha, i.tipoOriginal.toUpperCase(), i.horasOriginales, i.horasCalculadas.toFixed(2), i.desc]);
         doc.autoTable({ 
             startY: 30, 
-            head: [['Fecha', 'Tipo', 'Horas Base', 'Horas Total', 'Observaciones']], 
-            body: data,
-            theme: 'striped',
-            headStyles: { fillColor: [0, 123, 255] }
+            head: [['Fecha', 'Tipo', 'Base', 'Total', 'Notas']], 
+            body: data
         });
-        doc.save(`Historial_Horas_MD_${new Date().toISOString().split('T')[0]}.pdf`);
+        doc.save(`Horas_MD.pdf`);
     };
 
-    // Inicialización al cargar la página
     document.getElementById('fecha').valueAsDate = new Date();
     mostrar();
 </script>
