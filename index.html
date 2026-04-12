@@ -282,21 +282,27 @@
 <!-- Modal de Manual/Ayuda -->
 <div id="manualModal">
     <div class="modal-content">
-        <h3 style="margin-top:0">Manual de Uso</h3>
+        <h3 style="margin-top:0">Guía de Funciones</h3>
         
         <div class="manual-item">
             <b>🚀 Multiplicadores</b>
-            Las horas se calculan automáticamente: Extra (1.75), Nocturna (2.0) y Festiva (2.25). Negativas y Excesos son 1:1.
+            Cálculo automático: Extra (x1.75), Nocturna (x2.0) y Festiva (x2.25). Negativas y Excesos son 1:1.
         </div>
 
         <div class="manual-item">
-            <b>➖ Horas Negativas</b>
-            Al registrar horas "Negativas", estas se suman únicamente a su propio contador (apartado Negativas) con factor x1.0 y no alteran las Extra Acumuladas.
+            <b>📄 Exportar PDF</b>
+            Genera un documento profesional con tu historial detallado. Ideal para presentar informes, guardar registros físicos o enviar por correo.
         </div>
 
         <div class="manual-item">
-            <b>📉 Ajustes Negativos</b>
-            Si introduces un valor negativo (ej: -1.0) en Extra, Festiva o Nocturna, el sistema restará el valor exacto (x1.0) sin aplicar multiplicadores, permitiendo correcciones manuales precisas.
+            <b>💾 Copias de Seguridad (JSON)</b>
+            <b>Exportar JSON:</b> Descarga un archivo con todos tus datos actuales. Guárdalo para no perder nada si cambias de móvil o borras el navegador.<br>
+            <b>Importar JSON:</b> Recupera tus datos desde una copia previamente guardada seleccionando el archivo .json.
+        </div>
+
+        <div class="manual-item">
+            <b>📉 Ajustes Manuales</b>
+            Si registras un valor negativo (ej: -1.0) en cualquier categoría, se restará esa cantidad exacta (factor x1.0) para correcciones rápidas.
         </div>
 
         <button onclick="toggleManual()" style="background: var(--info); margin-top:10px">ENTENDIDO</button>
@@ -322,14 +328,12 @@
 
         let factor = 1.0;
         
-        // REGLA: Si el número es positivo, se aplican multiplicadores.
-        // Si el número es negativo, el factor siempre es 1.0 para restar el valor exacto.
         if (hIn > 0) {
             if (tipoInput === "extra") factor = 1.75;
             else if (tipoInput === "festiva") factor = 2.25;
             else if (tipoInput === "nocturna") factor = 2.0;
         } else {
-            factor = 1.0; // Resta exacta para valores negativos
+            factor = 1.0; 
         }
 
         const nuevoRegistro = {
