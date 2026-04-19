@@ -2,568 +2,221 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>REGISTRO HORAS MD</title>
+    <title>Migración - REGISTRO HORAS MD</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <!-- Librerías para PDF -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
     
     <style>
         * { box-sizing: border-box; }
-        :root {
-            --bg-body: #f4f6f9;
-            --bg-card: #ffffff;
-            --text-main: #333333;
-            --border-color: #eeeeee;
-            --primary: #007bff;
-            --success: #28a745;
-            --danger: #dc3545;
-            --warning: #ffc107;
-            --info: #17a2b8;
-        }
-
-        body.dark-mode {
-            --bg-body: #121212;
-            --bg-card: #1e1e1e;
-            --text-main: #e0e0e0;
-            --border-color: #333333;
-        }
-
+        
         body { 
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            font-family: 'Georgia', serif; /* Fuente elegante al estilo Midas */
             margin: 0; 
-            padding: 10px; 
-            background: var(--bg-body); 
-            color: var(--text-main); 
-            transition: all 0.3s ease;
-            font-size: 14px;
-        }
-
-        .header-container {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin: 5px 0 15px;
-            gap: 10px;
-        }
-
-        h1 { 
-            text-transform: uppercase; 
-            margin: 0; 
-            font-size: 1.1rem; 
-            flex-grow: 1;
-            text-align: left;
-        }
-
-        .header-btns {
-            display: flex;
-            gap: 5px;
-        }
-
-        #modoBtn, #ayudaBtn { 
-            background: #6c757d; 
-            padding: 6px 10px; 
-            font-size: 11px; 
-            width: auto; 
-            margin: 0;
-            white-space: nowrap;
-        }
-
-        #ayudaBtn {
-            background: var(--info);
-            font-weight: bold;
-            border-radius: 50%;
-            width: 28px;
-            height: 28px;
-            padding: 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 14px;
-        }
-
-        .top-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 12px; }
-        .card { 
-            background: var(--bg-card); 
-            padding: 12px; 
-            border-radius: 10px; 
-            margin-bottom: 12px; 
-            box-shadow: 0 2px 8px rgba(0,0,0,0.06); 
-            text-align: center; 
-            transition: inherit;
-        }
-        .top-cards .card { margin-bottom: 0; padding: 10px; }
-        .card-extra { grid-column: 1 / -1; }
-        .card-extra h2 { font-size: 1.8em; margin: 5px 0; color: var(--success); }
-        .card-extra h3 { font-size: 0.8rem; }
-        .card h3 { margin: 0; font-size: 0.75rem; opacity: 0.8; text-transform: uppercase; }
-        .card h2 { font-size: 1.4em; margin: 5px 0; }
-        
-        .positive { border-top: 4px solid var(--success); }
-        .negative { border-top: 4px solid var(--danger); }
-        .exceso { border-top: 4px solid var(--warning); }
-
-        .form-group { text-align: left; margin-top: 8px; }
-        .form-group label { display: block; font-size: 0.75rem; font-weight: bold; margin-bottom: 2px; opacity: 0.7; }
-
-        input, select, button { 
-            width: 100%; 
-            padding: 10px; 
-            margin-top: 2px; 
-            border-radius: 6px; 
-            border: 1px solid #ccc; 
-            font-size: 14px;
-            appearance: none;
-        }
-        
-        .dark-mode input, .dark-mode select { 
-            background: #2a2a2a; 
+            padding: 20px; 
+            background-color: #111111; 
             color: #e0e0e0; 
-            border: 1px solid #444; 
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+
+        .carta-midas {
+            background-color: #1e1e1e;
+            max-width: 550px;
+            width: 100%;
+            padding: 40px;
+            border-radius: 4px;
+            border: 1px solid #333;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+            text-align: center;
+            position: relative;
+        }
+
+        /* Un pequeño toque decorativo superior */
+        .carta-midas::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 60px;
+            height: 3px;
+            background-color: #b08d05; /* Dorado oscuro */
+        }
+
+        p {
+            font-size: 15px;
+            margin-bottom: 20px;
+            text-align: justify;
+            text-align-last: center;
+            color: #cccccc;
+        }
+
+        .instrucciones {
+            background: rgba(176, 141, 5, 0.05);
+            border-left: 3px solid #b08d05;
+            padding: 15px;
+            margin: 30px 0;
+            text-align: left;
+            font-style: italic;
+            font-size: 14px;
         }
 
         button { 
-            background: var(--primary); 
-            color: white; 
+            background: #b08d05; 
+            color: #111; 
             border: none; 
             cursor: pointer; 
             font-weight: bold;
-            margin-top: 12px;
-        }
-
-        .item { 
-            border-bottom: 1px solid var(--border-color); 
-            padding: 10px 0; 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center; 
-            text-align: left;
-        }
-        .tipo { font-size: 10px; font-weight: bold; padding: 1px 5px; border-radius: 3px; display: inline-block; margin-bottom: 2px; }
-        .verde { color: var(--success); background: rgba(40, 167, 69, 0.1); }
-        .rojo { color: var(--danger); background: rgba(220, 53, 69, 0.1); }
-        .amarillo { color: #b08d05; background: rgba(255, 193, 7, 0.1); }
-        
-        .borrar-btn { background: var(--danger); width: auto; padding: 4px 10px; font-size: 11px; margin: 0; }
-        
-        .mes-titulo { 
-            background: rgba(0,0,0,0.04);
-            padding: 6px 10px;
-            border-radius: 5px;
-            margin-top: 15px; 
-            font-weight: bold; 
-            font-size: 12px; 
-            display: flex; 
-            justify-content: space-between; 
-        }
-        .dark-mode .mes-titulo { background: rgba(255,255,255,0.04); }
-
-        #mensaje { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: #333; color: white; padding: 8px 16px; border-radius: 20px; display: none; z-index: 9999; font-size: 12px; }
-
-        .header-historial { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
-        .btn-group-sm { display: flex; gap: 5px; }
-        .btn-group-sm button { width: auto; margin: 0; padding: 6px 10px; font-size: 11px; }
-
-        #customModal, #manualModal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 10000; justify-content: center; align-items: center; }
-        .modal-content { background: var(--bg-card); padding: 20px; border-radius: 12px; text-align: center; max-width: 320px; width: 85%; max-height: 80vh; overflow-y: auto; }
-        .modal-buttons { display: flex; gap: 8px; margin-top: 15px; }
-        .modal-buttons button { margin: 0; flex: 1; padding: 8px; font-size: 13px; }
-
-        .manual-item { text-align: left; margin-bottom: 15px; font-size: 13px; }
-        .manual-item b { color: var(--primary); display: block; margin-bottom: 3px; }
-
-        .backup-controls {
-            display: flex;
-            gap: 8px;
+            padding: 15px 25px;
             margin-top: 10px;
+            margin-bottom: 30px;
+            border-radius: 3px; 
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: background 0.3s ease;
+            width: 100%;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
-        .backup-controls button {
-            background: #6c757d;
-            font-size: 10px;
-            padding: 8px;
+
+        button:hover {
+            background: #d4aa06;
+        }
+
+        .nueva-sede {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #333;
+        }
+
+        .nueva-sede p {
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .enlace-web {
+            display: inline-block;
+            color: #b08d05;
+            text-decoration: none;
+            font-size: 16px;
+            font-weight: bold;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            transition: color 0.3s;
+        }
+
+        .enlace-web:hover {
+            color: #d4aa06;
+            text-decoration: underline;
+        }
+
+        .alerta-top {
+            background: rgba(176, 141, 5, 0.1);
+            border: 1px solid #b08d05;
+            padding: 20px;
+            margin-bottom: 30px;
+            border-radius: 4px;
+        }
+
+        .alerta-top h2 {
+            color: #d4aa06;
+            margin-top: 0;
+            margin-bottom: 15px;
+            font-size: 1.1rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: normal;
+        }
+
+        .boton-secundario {
+            display: inline-block;
+            background: transparent;
+            color: #b08d05;
+            border: 1px solid #b08d05;
+            padding: 10px 20px;
+            text-decoration: none;
+            font-weight: bold;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.3s ease;
+            margin-bottom: 12px;
+            font-size: 12px;
+        }
+
+        .boton-secundario:hover {
+            background: #b08d05;
+            color: #111;
+        }
+
+        .alerta-top p {
+            font-size: 13px;
+            margin-bottom: 0;
+            text-align: center;
+            color: #a0a0a0;
+            font-style: italic;
+        }
+
+        .firma {
+            margin-top: 40px;
+            font-style: italic;
+            opacity: 0.7;
+            text-align: right;
+            font-size: 14px;
         }
     </style>
 </head>
 <body>
 
-<div class="header-container">
-    <h1>REGISTRO HORAS MD</h1>
-    <div class="header-btns">
-        <button id="ayudaBtn" title="Ayuda" onclick="toggleManual()">?</button>
-        <button id="modoBtn" onclick="toggleModo()">Modo...</button>
-    </div>
-</div>
-
-<div class="top-cards">
-    <div class="card positive card-extra">
-        <h3>Extra Acumuladas</h3>
-        <h2 id="totalExtra">0.00</h2>
-    </div>
-    <div class="card negative">
-        <h3>Negativas</h3>
-        <h2 id="totalNeg">0.00</h2>
-    </div>
-    <div class="card exceso">
-        <h3>Exceso</h3>
-        <h2 id="totalExceso">0.00</h2>
-    </div>
-</div>
-
-<div class="card">
-    <h3 style="text-align: left; margin-bottom: 5px;">Nuevo Registro</h3>
-    
-    <div class="form-group">
-        <label>Tipo de hora</label>
-        <select id="tipo">
-            <option value="extra">➕ Extra (x1.75)</option>
-            <option value="negativa">➖ Negativa (x1.0)</option>
-            <option value="festiva">🎉 Festiva (x2.25)</option>
-            <option value="nocturna">🌙 Nocturna (x2.0)</option>
-            <option value="exceso">⚠️ Exceso (x1.0)</option>
-        </select>
-    </div>
-
-    <div class="form-group">
-        <label>Horas</label>
-        <input type="number" id="horas" placeholder="0.00" step="0.01">
-    </div>
-
-    <div class="form-group">
-        <label>Fecha</label>
-        <input type="date" id="fecha">
-    </div>
-
-    <div class="form-group">
-        <label>Observaciones</label>
-        <input type="text" id="desc" placeholder="Nota rápida...">
-    </div>
-
-    <button onclick="guardar()">GUARDAR</button>
-</div>
-
-<div class="card">
-    <div class="header-historial">
-        <h3>Historial</h3>
-        <div class="btn-group-sm">
-            <button style="background: var(--success);" onclick="exportarPDF()">📄 PDF</button>
-        </div>
-    </div>
-    <input type="text" id="buscador" placeholder="Buscar..." oninput="mostrar()" style="padding: 8px; font-size: 13px;">
-    
-    <div class="backup-controls">
-        <button onclick="exportarJSON()">💾 Exportar JSON</button>
-        <button onclick="document.getElementById('fileInput').click()">📂 Importar JSON</button>
-        <input type="file" id="fileInput" style="display:none" accept=".json" onchange="importarJSON(event)">
-    </div>
-
-    <div id="lista"></div>
-</div>
-
-<button style="background:#dc3545; margin-bottom: 30px; padding: 8px; font-size: 12px; width: auto; margin: 0 auto 40px; display: block;" onclick="reiniciarAno()">Reiniciar Año</button>
-
-<div id="mensaje">✅</div>
-
-<div style="text-align: center; margin-bottom: 30px; font-size: 11px; opacity: 0.5;">
-    Almacenamiento Local<br>
-    AVS v3.2
-</div>
-
-<!-- Modal de Confirmación -->
-<div id="customModal">
-    <div class="modal-content">
-        <p id="modalText" style="font-size: 14px;"></p>
-        <div class="modal-buttons">
-            <button id="modalBtnCancel">No</button>
-            <button id="modalBtnOk">Sí</button>
-        </div>
-    </div>
-</div>
-
-<!-- Modal de Manual/Ayuda -->
-<div id="manualModal">
-    <div class="modal-content">
-        <h3 style="margin-top:0">Guía de Funciones</h3>
+    <div class="carta-midas">
         
-        <div class="manual-item">
-            <b>🚀 Multiplicadores</b>
-            Cálculo automático: Extra (x1.75), Nocturna (x2.0) y Festiva (x2.25). Negativas y Excesos son 1:1.
+        <div class="alerta-top">
+            <h2>Acceso a la Nueva Sede</h2>
+            <a href="https://registro-horas-md.vercel.app/" class="boton-secundario" target="_blank" rel="noopener noreferrer">Ir a la Nueva Web</a>
+            <p>⚠️ Importante: Asegúrese de descargar su respaldo de datos (JSON) más abajo antes de marcharse.</p>
         </div>
-
-        <div class="manual-item">
-            <b>📄 Exportar PDF</b>
-            Genera un documento profesional con tu historial detallado. Ideal para presentar informes, guardar registros físicos o enviar por correo.
-        </div>
-
-        <div class="manual-item">
-            <b>💾 Copias de Seguridad (JSON)</b>
-            <b>Exportar JSON:</b> Descarga un archivo con todos tus datos actuales. Guárdalo para no perder nada si cambias de móvil o borras el navegador.<br>
-            <b>Importar JSON:</b> Recupera tus datos desde una copia previamente guardada seleccionando el archivo .json.
-        </div>
-
-        <div class="manual-item">
-            <b>📉 Ajustes Manuales</b>
-            Si registras un valor negativo (ej: -1.0) en cualquier categoría, se restará esa cantidad exacta (factor x1.0) para correcciones rápidas.
-        </div>
-
-        <button onclick="toggleManual()" style="background: var(--info); margin-top:10px">ENTENDIDO</button>
-    </div>
-</div>
-
-<script>
-    let lista = JSON.parse(localStorage.getItem('horas_md_data')) || [];
-
-    function guardarLocal() {
-        localStorage.setItem('horas_md_data', JSON.stringify(lista));
-        mostrar();
-    }
-
-    window.guardar = () => {
-        const hIn = parseFloat(document.getElementById("horas").value);
-        const desc = document.getElementById("desc").value || "-";
-        const fecha = document.getElementById("fecha").value;
-        const tipoInput = document.getElementById("tipo").value;
-
-        if (isNaN(hIn) || hIn === 0) { showModal("Indica una cantidad de horas válida."); return; }
-        if (!fecha) { showModal("La fecha es necesaria."); return; }
-
-        let factor = 1.0;
         
-        if (hIn > 0) {
-            if (tipoInput === "extra") factor = 1.75;
-            else if (tipoInput === "festiva") factor = 2.25;
-            else if (tipoInput === "nocturna") factor = 2.0;
-        } else {
-            factor = 1.0; 
-        }
+        <p>Estimado colaborador,</p>
+        
+        <p>Como todo en esta vida, las grandes etapas deben concluir para dar paso a estructuras superiores. Hemos tomado la determinación de trasladar nuestras operaciones a una nueva ubicación, más sofisticada, eficiente y segura.</p>
+        
+        <p>No debe temer por la pérdida de sus registros. Su dedicación y su tiempo son valores que custodiamos con absoluto rigor y respeto.</p>
 
-        const nuevoRegistro = {
-            id: Date.now().toString(),
-            horasCalculadas: hIn * factor,
-            horasOriginales: hIn,
-            desc: desc,
-            fecha: fecha,
-            tipoOriginal: tipoInput,
-            timestamp: Date.now()
+        <div class="instrucciones">
+            Pulse el botón inferior para extraer su historial (archivo JSON). Custodie este documento; será la llave para restaurar sus datos en nuestra nueva sede.
+        </div>
+
+        <button onclick="exportarJSON()">Descargar mi respaldo de datos (JSON)</button>
+
+        <div class="nueva-sede">
+            <p>Le aguardamos con todo dispuesto en nuestra nueva dirección:</p>
+            <a href="https://registro-horas-md.vercel.app/" class="enlace-web" target="_blank" rel="noopener noreferrer">
+                registro-horas-md.vercel.app
+            </a>
+        </div>
+
+        <div class="firma">
+            Atentamente,<br>Alberto-VS.
+        </div>
+    </div>
+
+    <script>
+        // Recuperamos la lista original del localStorage exacto que usaba la app anterior
+        let lista = JSON.parse(localStorage.getItem('horas_md_data')) || [];
+
+        window.exportarJSON = () => {
+            if (lista.length === 0) {
+                alert("Estimado usuario, actualmente no consta ningún registro en su historial para exportar. Puede dirigirse directamente a la nueva web.");
+                return;
+            }
+            const dataStr = JSON.stringify(lista, null, 2);
+            const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
+            const linkElement = document.createElement('a');
+            linkElement.setAttribute('href', dataUri);
+            linkElement.setAttribute('download', `Respaldo_Migracion_${new Date().toISOString().split('T')[0]}.json`);
+            linkElement.click();
         };
-
-        lista.push(nuevoRegistro);
-        lista.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
-        guardarLocal();
-
-        document.getElementById("horas").value = "";
-        document.getElementById("desc").value = "";
-        showToast("Guardado");
-    };
-
-    window.borrarRegistro = (docId) => {
-        showModal("¿Borrar registro?", true, () => {
-            lista = lista.filter(item => item.id !== docId);
-            guardarLocal();
-            showToast("Registro borrado");
-        });
-    };
-
-    window.reiniciarAno = () => {
-        const year = new Date().getFullYear();
-        showModal(`¿Deseas borrar TODOS los registros del año ${year}?`, true, () => {
-            setTimeout(() => {
-                showModal(`⚠️ ESTA ACCIÓN NO SE PUEDE DESHACER.`, true, () => {
-                    lista = lista.filter(item => new Date(item.fecha).getFullYear() !== year);
-                    guardarLocal();
-                    showToast("Año borrado");
-                });
-            }, 300);
-        });
-    };
-
-    window.mostrar = () => {
-        const cont = document.getElementById("lista");
-        cont.innerHTML = "";
-        let tExtraAcumulado = 0;
-        let tNegativasVisual = 0;
-        let tExceso = 0;
-        
-        const filter = document.getElementById("buscador").value.toLowerCase();
-        const meses = {};
-
-        lista.forEach(item => {
-            const f = new Date(item.fecha);
-            const fFmt = `${String(f.getDate()).padStart(2,'0')}/${String(f.getMonth()+1).padStart(2,'0')}/${f.getFullYear()}`;
-            
-            if (filter && !item.desc.toLowerCase().includes(filter) && !fFmt.includes(filter)) return;
-
-            if (item.tipoOriginal === "negativa") {
-                tNegativasVisual += item.horasCalculadas; 
-            } else if (item.tipoOriginal === "exceso") {
-                tExceso += item.horasCalculadas;
-            } else {
-                tExtraAcumulado += item.horasCalculadas;
-            }
-
-            const mKey = `${f.getFullYear()}-${String(f.getMonth()+1).padStart(2,'0')}`;
-            if (!meses[mKey]) {
-                meses[mKey] = { 
-                    label: f.toLocaleString('es-ES', { month: 'long', year: 'numeric' }), 
-                    items: [], 
-                    vence: "" 
-                };
-            }
-            
-            if (item.tipoOriginal !== "negativa" && item.tipoOriginal !== "exceso") {
-                let c = new Date(f.getFullYear(), f.getMonth() + 4, 1);
-                meses[mKey].vence = c.toLocaleString('es-ES', { month: 'short', year: '2-digit' });
-            }
-            meses[mKey].items.push({ ...item, fFmt });
-        });
-
-        Object.keys(meses).sort((a,b) => b.localeCompare(a)).forEach(k => {
-            const m = meses[k];
-            cont.innerHTML += `<div class="mes-titulo"><span style="text-transform: capitalize;">${m.label}</span>${m.vence ? '<span>Vence: '+m.vence+'</span>' : ''}</div>`;
-            m.items.forEach(i => {
-                const colors = { extra: 'verde', festiva: 'verde', nocturna: 'verde', negativa: 'rojo', exceso: 'amarillo' };
-                cont.innerHTML += `
-                    <div class="item">
-                        <div style="max-width: 70%">
-                            <span class="tipo ${colors[i.tipoOriginal]}">${i.tipoOriginal.toUpperCase()}</span><br>
-                            <b>${i.horasOriginales}h</b> <small style="opacity:0.6">(${i.horasCalculadas.toFixed(2)}h total)</small><br>
-                            <small style="font-size: 11px; display:block; margin-top:2px">${i.fFmt} - ${i.desc}</small>
-                        </div>
-                        <button class="borrar-btn" onclick="borrarRegistro('${i.id}')">Borrar</button>
-                    </div>`;
-            });
-        });
-
-        document.getElementById("totalExtra").innerText = tExtraAcumulado.toFixed(2);
-        document.getElementById("totalNeg").innerText = tNegativasVisual.toFixed(2);
-        document.getElementById("totalExceso").innerText = tExceso.toFixed(2);
-    };
-
-    window.exportarJSON = () => {
-        if (lista.length === 0) return;
-        const dataStr = JSON.stringify(lista, null, 2);
-        const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
-        const linkElement = document.createElement('a');
-        linkElement.setAttribute('href', dataUri);
-        linkElement.setAttribute('download', `Copia_Horas_${new Date().toISOString().split('T')[0]}.json`);
-        linkElement.click();
-    };
-
-    window.importarJSON = (event) => {
-        const file = event.target.files[0];
-        if (!file) return;
-        const reader = new FileReader();
-        reader.onload = (e) => {
-            try {
-                const importedData = JSON.parse(e.target.result);
-                lista = importedData;
-                guardarLocal();
-                showToast("Importado");
-            } catch (err) { showModal("Error al importar."); }
-        };
-        reader.readAsText(file);
-    };
-
-    window.toggleModo = () => {
-        document.body.classList.toggle("dark-mode");
-        const isDark = document.body.classList.contains("dark-mode");
-        localStorage.setItem("modo", isDark ? "dark" : "light");
-        updateModoBtnLabel();
-    };
-
-    window.toggleManual = () => {
-        const m = document.getElementById("manualModal");
-        m.style.display = (m.style.display === "flex") ? "none" : "flex";
-    };
-
-    function updateModoBtnLabel() {
-        const isDark = document.body.classList.contains("dark-mode");
-        document.getElementById("modoBtn").innerText = isDark ? "☀️ Claro" : "🌙 Oscuro";
-    }
-
-    if (localStorage.getItem("modo") === "dark") document.body.classList.add("dark-mode");
-    updateModoBtnLabel();
-
-    function showToast(t) {
-        const m = document.getElementById("mensaje");
-        m.innerText = t + " ✅"; m.style.display = "block";
-        setTimeout(() => m.style.display = "none", 2000);
-    }
-
-    let mCb = null;
-    window.showModal = (msg, conf = false, cb = null) => {
-        document.getElementById("modalText").innerText = msg;
-        document.getElementById("customModal").style.display = "flex";
-        document.getElementById("modalBtnCancel").style.display = conf ? "block" : "none";
-        mCb = cb;
-    };
-    document.getElementById("modalBtnOk").onclick = () => {
-        document.getElementById("customModal").style.display = "none";
-        if (mCb) mCb();
-    };
-    document.getElementById("modalBtnCancel").onclick = () => {
-        document.getElementById("customModal").style.display = "none";
-    };
-
-    window.exportarPDF = () => {
-        const { jsPDF } = window.jspdf;
-        const doc = new jsPDF();
-        
-        // Título principal
-        doc.setFontSize(18);
-        doc.setTextColor(40);
-        doc.text("REGISTRO HORAS MD", 14, 20);
-        
-        // Calcular Totales para el resumen
-        let tExtra = 0;
-        let tNeg = 0;
-        let tExc = 0;
-        lista.forEach(i => {
-            if (i.tipoOriginal === "negativa") tNeg += i.horasCalculadas;
-            else if (i.tipoOriginal === "exceso") tExc += i.horasCalculadas;
-            else tExtra += i.horasCalculadas;
-        });
-
-        // Cuadro de Resumen en la parte superior
-        doc.setFontSize(11);
-        doc.setTextColor(60);
-        doc.text("RESUMEN GENERAL", 14, 32);
-        
-        doc.autoTable({
-            startY: 35,
-            theme: 'grid',
-            headStyles: { fillColor: [240, 240, 240], textColor: [50, 50, 50], fontStyle: 'bold' },
-            head: [['EXTRA ACUMULADAS', 'NEGATIVAS', 'EXCESO']],
-            body: [[tExtra.toFixed(2) + " h", tNeg.toFixed(2) + " h", tExc.toFixed(2) + " h"]],
-            margin: { left: 14, right: 14 }
-        });
-
-        // Tabla de detalles
-        const finalY = doc.lastAutoTable.finalY || 35;
-        doc.setFontSize(11);
-        doc.text("DETALLE DE REGISTROS", 14, finalY + 15);
-
-        const tableData = lista.map(i => [
-            i.fecha.split('-').reverse().join('/'), 
-            i.tipoOriginal.toUpperCase(), 
-            i.horasOriginales.toFixed(2), 
-            i.horasCalculadas.toFixed(2), 
-            i.desc
-        ]);
-
-        doc.autoTable({ 
-            startY: finalY + 20, 
-            head: [['Fecha', 'Tipo', 'Horas Base', 'Horas Calc.', 'Observaciones']], 
-            body: tableData,
-            headStyles: { fillColor: [0, 123, 255] }, // Azul primario
-            alternateRowStyles: { fillColor: [245, 245, 245] },
-            margin: { left: 14, right: 14 }
-        });
-
-        doc.save(`Historial_Horas_MD_${new Date().toLocaleDateString()}.pdf`);
-    };
-
-    document.getElementById('fecha').valueAsDate = new Date();
-    mostrar();
-</script>
+    </script>
 </body>
 </html>
