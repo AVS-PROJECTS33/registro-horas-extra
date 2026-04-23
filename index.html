@@ -18,7 +18,7 @@
             align-items: center;
             min-height: 100vh;
             line-height: 1.6;
-            padding: 20px;
+            padding: 15px; /* Reducido para móviles */
         }
 
         .carta-midas {
@@ -31,6 +31,19 @@
             box-shadow: 0 10px 30px rgba(0,0,0,0.8);
             text-align: center;
             position: relative;
+        }
+
+        /* Ajustes para móviles */
+        @media (max-width: 480px) {
+            .carta-midas {
+                padding: 25px 15px; /* Menos espacio lateral en móvil */
+            }
+            h2 {
+                font-size: 1.1rem;
+            }
+            p {
+                font-size: 14px;
+            }
         }
 
         /* Toque decorativo superior */
@@ -58,8 +71,7 @@
         p {
             font-size: 15px;
             margin-bottom: 20px;
-            text-align: justify;
-            text-align-last: center;
+            text-align: center; /* Cambiado de justify a center para móviles */
             color: #cccccc;
         }
 
@@ -122,7 +134,7 @@
             border-left: 3px solid #b08d05;
             padding: 15px;
             margin: 30px 0;
-            text-align: left;
+            text-align: center; /* Centrado para móvil */
             font-style: italic;
             font-size: 14px;
             color: #aaa;
@@ -141,6 +153,7 @@
             font-size: 16px;
             font-weight: bold;
             transition: color 0.3s;
+            word-break: break-all; /* Evita que el enlace rompa el layout en pantallas pequeñas */
         }
 
         .enlace-web:hover {
