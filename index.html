@@ -1,739 +1,495 @@
-<!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>REGISTRO HORAS CLOUD</title>
-    <!-- Prevenir zoom en móviles -->
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>REGISTRO HORAS MD</title>
+    <title>Migración - REGISTRO HORAS MD</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <!-- Librerías para PDF -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
-    
+
     <style>
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        
+        * { box-sizing: border-box; }
         :root {
-            --bg-body: #f8fafc;
+            --bg-body: #f4f6f9;
             --bg-card: #ffffff;
-            --text-main: #1e293b;
-            --text-muted: #64748b;
-            --border-color: #e2e8f0;
-            --primary: #3b82f6;
-            --primary-hover: #2563eb;
-            --success: #10b981;
-            --danger: #ef4444;
-            --warning: #f59e0b;
-            --info: #0ea5e9;
-            --radius: 12px;
-            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+            --text-main: #333333;
+            --border-color: #eeeeee;
+            --primary: #007bff;
+            --success: #28a745;
+            --danger: #dc3545;
+            --warning: #ffc107;
+            --info: #17a2b8;
         }
 
         body.dark-mode {
             --bg-body: #121212;
             --bg-card: #1e1e1e;
             --text-main: #e0e0e0;
-            --text-muted: #9e9e9e;
             --border-color: #333333;
-            --primary: #3b82f6;
-            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
         }
 
+        
         body { 
-            font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            font-family: 'Georgia', serif; /* Fuente elegante al estilo Midas */
             margin: 0; 
+            padding: 10px; 
             background: var(--bg-body); 
             color: var(--text-main); 
-            transition: background-color 0.3s ease, color 0.3s ease;
-            font-size: 15px;
-            /* Prevenir zoom y comportamientos táctiles no deseados */
-            touch-action: manipulation;
-            -webkit-text-size-adjust: 100%;
+            transition: all 0.3s ease;
+            padding: 20px; 
+            background-color: #111111; 
+            color: #e0e0e0; 
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            line-height: 1.6;
         }
 
-        .container { padding: 16px 12px; max-width: 600px; margin: 0 auto; }
-
-        /* PANTALLA DE LOGIN */
-        #login-screen {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
+        .carta-midas {
+            background-color: #1e1e1e;
+            max-width: 550px;
+            width: 100%;
+            padding: 40px;
+            border-radius: 4px;
+            border: 1px solid #333;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.8);
             text-align: center;
-            padding: 20px;
+            position: relative;
         }
-        .login-card {
-            background: var(--bg-card);
-            padding: 30px 20px;
-            border-radius: 16px;
-            box-shadow: var(--shadow);
-            width: 100%;
-            max-width: 350px;
-            border: 1px solid var(--border-color);
+
+        /* Un pequeño toque decorativo superior */
+        .carta-midas::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 60px;
+            height: 3px;
+            background-color: #b08d05; /* Dorado oscuro */
         }
-        .btn-google {
-            background: white;
-            color: #333;
-            border: 1px solid #ccc;
-            padding: 12px;
-            border-radius: 8px;
+
+        p {
+            font-size: 15px;
+            margin-bottom: 20px;
+            text-align: justify;
+            text-align-last: center;
+            color: #cccccc;
+        }
+
+        .instrucciones {
+            background: rgba(176, 141, 5, 0.05);
+            border-left: 3px solid #b08d05;
+            padding: 15px;
+            margin: 30px 0;
+            text-align: left;
+            font-style: italic;
+            font-size: 14px;
+        }
+
+        .header-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 5px 0 15px;
+            gap: 10px;
+        button { 
+            background: #b08d05; 
+            color: #111; 
+            border: none; 
+            cursor: pointer; 
             font-weight: bold;
+            padding: 15px 25px;
+            margin-top: 10px;
+            margin-bottom: 30px;
+            border-radius: 3px; 
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: background 0.3s ease;
+            width: 100%;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        h1 { 
+            text-transform: uppercase; 
+            margin: 0; 
+            font-size: 1.1rem; 
+            flex-grow: 1;
+            text-align: left;
+        button:hover {
+            background: #d4aa06;
+        }
+
+        .header-btns {
+            display: flex;
+            gap: 5px;
+        .nueva-sede {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #333;
+        }
+
+        #modoBtn, #ayudaBtn { 
+            background: #6c757d; 
+            padding: 6px 10px; 
+            font-size: 11px; 
+            width: auto; 
+            margin: 0;
+            white-space: nowrap;
+        .nueva-sede p {
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        #ayudaBtn {
+            background: var(--info);
+        .enlace-web {
+            display: inline-block;
+            color: #b08d05;
+            text-decoration: none;
+            font-size: 16px;
+            font-weight: bold;
+            border-radius: 50%;
+            width: 28px;
+            height: 28px;
+            padding: 0;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 10px;
-            width: 100%;
-            cursor: pointer;
-            margin-bottom: 12px;
-            font-size: 15px;
-        }
-        .btn-guest {
-            background: var(--bg-body);
-            color: var(--text-muted);
-            border: 1px solid var(--border-color);
+            font-size: 14px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            transition: color 0.3s;
         }
 
-        /* HEADER APP */
-        .header-container { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding: 0 4px; }
-        h1 { margin: 0; font-size: 1.25rem; font-weight: 800; color: var(--text-main); }
-        .user-badge { font-size: 1.2rem; font-weight: 800; color: var(--text-main); display: block; margin: 0; }
+        .top-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 12px; }
+        .card { 
+            background: var(--bg-card); 
+            padding: 12px; 
+            border-radius: 10px; 
+            margin-bottom: 12px; 
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06); 
+            text-align: center; 
+            transition: inherit;
+        .enlace-web:hover {
+            color: #d4aa06;
+            text-decoration: underline;
+        }
+        .top-cards .card { margin-bottom: 0; padding: 10px; }
+        .card-extra { grid-column: 1 / -1; }
+        .card-extra h2 { font-size: 1.8em; margin: 5px 0; color: var(--success); }
+        .card-extra h3 { font-size: 0.8rem; }
+        .card h3 { margin: 0; font-size: 0.75rem; opacity: 0.8; text-transform: uppercase; }
+        .card h2 { font-size: 1.4em; margin: 5px 0; }
         
-        .header-btns { display: flex; gap: 8px; }
-        .btn-icon { 
-            background: var(--bg-card); color: var(--text-main); border: 1px solid var(--border-color);
-            padding: 6px 12px; font-size: 12px; font-weight: 600; border-radius: 20px; cursor: pointer;
+        .positive { border-top: 4px solid var(--success); }
+        .negative { border-top: 4px solid var(--danger); }
+        .exceso { border-top: 4px solid var(--warning); }
+
+        .form-group { text-align: left; margin-top: 8px; }
+        .form-group label { display: block; font-size: 0.75rem; font-weight: bold; margin-bottom: 2px; opacity: 0.7; }
+
+        input, select, button { 
+            width: 100%; 
+            padding: 10px; 
+            margin-top: 2px; 
+            border-radius: 6px; 
+            border: 1px solid #ccc; 
+            font-size: 14px;
+            appearance: none;
+        .alerta-top {
+            background: rgba(176, 141, 5, 0.1);
+            border: 1px solid #b08d05;
+            padding: 20px;
+            margin-bottom: 30px;
+            border-radius: 4px;
+        }
+        
+        .dark-mode input, .dark-mode select { 
+            background: #2a2a2a; 
+            color: #e0e0e0; 
+            border: 1px solid #444; 
+
+        .alerta-top h2 {
+            color: #d4aa06;
+            margin-top: 0;
+            margin-bottom: 15px;
+            font-size: 1.1rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: normal;
         }
 
-        /* CARDS & FORMS */
-        .top-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; }
-        .card { background: var(--bg-card); padding: 20px; border-radius: var(--radius); margin-bottom: 16px; box-shadow: var(--shadow); border: 1px solid var(--border-color); scroll-margin-top: 25px; }
-        .top-cards .card { margin-bottom: 0; padding: 16px; text-align: center; border-top-width: 4px; }
-        .card-extra { grid-column: 1 / -1; border-top-color: var(--success); }
-        
-        /* Cambios en color de Negativas */
-        .negative { border-top-color: #7e22ce; }
-        .dark-mode .negative { border-top-color: #c084fc; }
-        
-        .exceso { border-top-color: var(--warning); }
-        .card h3 { margin: 0 0 4px 0; font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; }
-        .card-extra h2 { font-size: 2.2rem; margin: 0; color: var(--success); font-weight: 800; }
-        .card h2 { font-size: 1.6rem; margin: 0; font-weight: 800; }
-        
-        .form-group { text-align: left; margin-bottom: 12px; }
-        .form-group label { display: block; font-size: 0.8rem; font-weight: 600; margin-bottom: 6px; color: var(--text-muted); }
-        input, select { width: 100%; max-width: 100%; box-sizing: border-box; padding: 12px 14px; height: 48px; border-radius: 8px; border: 1px solid var(--border-color); font-size: 16px; font-family: inherit; background: var(--bg-body); color: var(--text-main); }
-        input:focus, select:focus { outline: none; border-color: var(--primary); }
-        input[type="date"] { -webkit-appearance: none; appearance: none; display: block; }
-        
-        button.btn-primary { background: var(--primary); color: white; border: none; font-weight: 700; margin-top: 8px; border-radius: 8px; padding: 12px 16px; width: 100%; cursor: pointer; }
-
-        .item { border-bottom: 1px solid var(--border-color); padding: 16px 0; display: flex; justify-content: space-between; align-items: center; }
-        .item:last-child { border-bottom: none; }
-        .tipo { font-size: 11px; font-weight: 800; padding: 4px 8px; border-radius: 12px; display: inline-block; margin-bottom: 6px; }
-        .verde { color: #047857; background: #d1fae5; }
-        .rojo { color: #be123c; background: #ffe4e6; }
-        .amarillo { color: #b45309; background: #fef3c7; }
-        .azul { color: #1d4ed8; background: #dbeafe; }
-        .morado { color: #7e22ce; background: #f3e8ff; }
-        .amarillo-chillon { color: #422006; background: #fde047; }
-        .dark-mode .verde { color: #34d399; background: rgba(16, 185, 129, 0.15); }
-        .dark-mode .rojo { color: #fb7185; background: rgba(225, 29, 72, 0.15); }
-        .dark-mode .amarillo { color: #fbbf24; background: rgba(245, 158, 11, 0.15); }
-        .dark-mode .azul { color: #60a5fa; background: rgba(59, 130, 246, 0.15); }
-        .dark-mode .morado { color: #c084fc; background: rgba(126, 34, 206, 0.15); }
-        .dark-mode .amarillo-chillon { color: #fef08a; background: rgba(250, 204, 21, 0.2); }
-        
-        .borrar-btn { background: rgba(239, 68, 68, 0.1); color: var(--danger); padding: 8px 14px; font-size: 12px; border: none; border-radius: 6px; cursor: pointer;}
-        .editar-btn { background: rgba(59, 130, 246, 0.1); color: var(--primary); padding: 8px 14px; font-size: 12px; border: none; border-radius: 6px; cursor: pointer;}
-        
-        .mes-titulo { background: var(--bg-body); color: var(--text-muted); padding: 8px 12px; border-radius: 6px; margin-top: 12px; font-weight: 700; font-size: 15px; display: flex; justify-content: space-between; border: 1px solid var(--border-color); text-transform: uppercase; cursor: pointer; user-select: none; scroll-margin-top: 25px;}
-
-        #mensaje { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background: var(--text-main); color: var(--bg-card); padding: 10px 24px; border-radius: 30px; display: none; z-index: 9999; font-weight: 600; }
-
-        .btn-danger-outline {
+        button { 
+            background: var(--primary); 
+            color: white; 
+            border: none; 
+            cursor: pointer; 
+        .boton-secundario {
+            display: inline-block;
             background: transparent;
-            color: var(--danger);
-            border: 1px solid var(--danger);
-            padding: 12px;
-            font-size: 13px;
-            width: auto;
-            margin: 20px auto 10px;
-            display: block;
-            border-radius: 8px;
-            cursor: pointer;
+            color: #b08d05;
+            border: 1px solid #b08d05;
+            padding: 10px 20px;
+            text-decoration: none;
             font-weight: bold;
-        }
-        .btn-danger-outline:hover {
-            background: var(--danger);
-            color: white;
+            margin-top: 12px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.3s ease;
+            margin-bottom: 12px;
+            font-size: 12px;
         }
 
-        /* Calendario */
-        .calendar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; font-weight: 700; font-size: 14px; }
-        .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; text-align: center; }
-        .calendar-day-name { font-size: 11px; color: var(--text-muted); font-weight: bold; margin-bottom: 8px;}
-        .calendar-day { padding: 8px 0; border-radius: 6px; cursor: pointer; font-size: 13px; border: 1px solid var(--border-color); background: var(--bg-body); transition: all 0.2s;}
-        @media (hover: hover) {
-            .calendar-day:hover { border-color: var(--primary); }
+        .item { 
+            border-bottom: 1px solid var(--border-color); 
+            padding: 10px 0; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            text-align: left;
+        .boton-secundario:hover {
+            background: #b08d05;
+            color: #111;
         }
-        .calendar-day.empty { visibility: hidden; border: none; background: transparent; }
-        .cal-verde { background: #d1fae5; color: #047857; font-weight: bold; border-color: #047857;}
-        .cal-rojo { background: #ffe4e6; color: #be123c; font-weight: bold; border-color: #be123c;}
-        .cal-amarillo { background: #fef3c7; color: #b45309; font-weight: bold; border-color: #b45309;}
-        .cal-azul { background: #dbeafe; color: #1d4ed8; font-weight: bold; border-color: #1d4ed8;}
-        .cal-morado { background: #f3e8ff; color: #7e22ce; font-weight: bold; border-color: #7e22ce;}
-        .cal-amarillo-chillon { background: #fef08a; color: #713f12; font-weight: bold; border-color: #facc15;}
-        .cal-finde { color: #3b82f6; font-weight: bold; }
+        .tipo { font-size: 10px; font-weight: bold; padding: 1px 5px; border-radius: 3px; display: inline-block; margin-bottom: 2px; }
+        .verde { color: var(--success); background: rgba(40, 167, 69, 0.1); }
+        .rojo { color: var(--danger); background: rgba(220, 53, 69, 0.1); }
+        .amarillo { color: #b08d05; background: rgba(255, 193, 7, 0.1); }
         
-        /* Festivos en rojo */
-        .festivo-con-registro { color: #be123c !important; font-weight: 900 !important; }
+        .borrar-btn { background: var(--danger); width: auto; padding: 4px 10px; font-size: 11px; margin: 0; }
         
-        .dark-mode .cal-verde { background: rgba(16, 185, 129, 0.2); color: #34d399; border-color: #34d399;}
-        .dark-mode .cal-rojo { background: rgba(225, 29, 72, 0.2); color: #fb7185; border-color: #fb7185;}
-        .dark-mode .cal-amarillo { background: rgba(245, 158, 11, 0.2); color: #fbbf24; border-color: #fbbf24;}
-        .dark-mode .cal-azul { background: rgba(59, 130, 246, 0.2); color: #60a5fa; border-color: #60a5fa;}
-        .dark-mode .cal-morado { background: rgba(126, 34, 206, 0.2); color: #c084fc; border-color: #c084fc;}
-        .dark-mode .cal-finde { color: #60a5fa; }
-        .dark-mode .festivo-con-registro { color: #fb7185 !important; }
+        .mes-titulo { 
+            background: rgba(0,0,0,0.04);
+            padding: 6px 10px;
+            border-radius: 5px;
+            margin-top: 15px; 
+            font-weight: bold; 
+            font-size: 12px; 
+            display: flex; 
+            justify-content: space-between; 
+        }
+        .dark-mode .mes-titulo { background: rgba(255,255,255,0.04); }
 
-        /* Modales */
-        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.7); backdrop-filter: blur(4px); z-index: 10000; justify-content: center; align-items: center; }
-        .modal-content { background: var(--bg-card); padding: 24px; border-radius: 16px; text-align: center; max-width: 340px; width: 90%; border: 1px solid var(--border-color); }
-        .modal-buttons { display: flex; gap: 12px; margin-top: 20px; }
-        .modal-buttons button { flex: 1; padding: 10px; border-radius: 8px; border: none; font-weight: bold; cursor: pointer;}
-        #modalBtnCancel { background: var(--bg-body); color: var(--text-main); border: 1px solid var(--border-color); }
-        #modalBtnOk { background: var(--danger); color: white; }
+        #mensaje { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: #333; color: white; padding: 8px 16px; border-radius: 20px; display: none; z-index: 9999; font-size: 12px; }
+
+        .header-historial { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        .btn-group-sm { display: flex; gap: 5px; }
+        .btn-group-sm button { width: auto; margin: 0; padding: 6px 10px; font-size: 11px; }
+
+        #customModal, #manualModal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 10000; justify-content: center; align-items: center; }
+        .modal-content { background: var(--bg-card); padding: 20px; border-radius: 12px; text-align: center; max-width: 320px; width: 85%; max-height: 80vh; overflow-y: auto; }
+        .modal-buttons { display: flex; gap: 8px; margin-top: 15px; }
+        .modal-buttons button { margin: 0; flex: 1; padding: 8px; font-size: 13px; }
+
+        .manual-item { text-align: left; margin-bottom: 15px; font-size: 13px; }
+        .manual-item b { color: var(--primary); display: block; margin-bottom: 3px; }
+
+        .backup-controls {
+            display: flex;
+            gap: 8px;
+            margin-top: 10px;
+        .alerta-top p {
+            font-size: 13px;
+            margin-bottom: 0;
+            text-align: center;
+            color: #a0a0a0;
+            font-style: italic;
+        }
+        .backup-controls button {
+            background: #6c757d;
+            font-size: 10px;
+            padding: 8px;
+
+        .firma {
+            margin-top: 40px;
+            font-style: italic;
+            opacity: 0.7;
+            text-align: right;
+            font-size: 14px;
+        }
     </style>
 </head>
 <body>
 
-<!-- PANTALLA DE LOGIN -->
-<div id="login-screen" style="display: none;">
-    <div class="login-card">
-        <!-- Aviso recomendado azul -->
-        <div style="color: var(--primary); font-size: 13px; font-weight: bold; margin-bottom: 16px; background: rgba(59, 130, 246, 0.1); padding: 8px; border-radius: 6px;">Se recomienda iniciar sesión con correo y contraseña</div>
-        
-        <h2 style="margin-top:0">Control de Horas</h2>
-        <p style="color: var(--text-muted); font-size: 14px; margin-bottom: 24px;">Inicia sesión para guardar tus registros en la nube.</p>
-        
-        <!-- VISTA DE LOGIN -->
-        <div id="login-form">
-            <div class="form-group" style="text-align: left; margin-bottom: 12px;">
-                <label style="font-size: 13px;">Email</label>
-                <input type="email" id="emailInput" placeholder="tu@email.com" style="margin-bottom: 4px; height: 42px;">
-            </div>
-            <div class="form-group" style="text-align: left; margin-bottom: 20px;">
-                <label style="font-size: 13px;">Contraseña</label>
-                <input type="password" id="passInput" placeholder="******" style="height: 42px;">
-            </div>
-
-            <div style="display: flex; gap: 8px; margin-bottom: 20px;">
-                <button class="btn-primary" style="margin-top: 0; flex: 1; padding: 10px;" onclick="loginEmail()">Entrar</button>
-                <button class="btn-primary" style="margin-top: 0; flex: 1; padding: 10px; background: var(--success);" onclick="mostrarRegistro()">Registrar</button>
-            </div>
-            
-            <div style="margin: 16px 0; color: var(--text-muted); font-size: 12px; display: flex; align-items: center; justify-content: center;">
-                <div style="flex: 1; height: 1px; background: var(--border-color);"></div>
-                <span style="padding: 0 10px;">O entra con</span>
-                <div style="flex: 1; height: 1px; background: var(--border-color);"></div>
-            </div>
-
-            <button class="btn-google" onclick="loginGoogle()">
-                <svg width="18" height="18" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
-                Entrar con Google
-            </button>
-            <button class="btn-guest" onclick="loginAnonimo()" style="width: 100%; padding: 12px; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 15px;">
-                👤 Entrar como Invitado (Local)
-            </button>
-
-            <!-- Recuperar contraseña al final -->
-            <div style="margin-top: 24px;">
-                <a href="javascript:void(0)" onclick="recuperarPassword()" style="font-size: 13px; color: var(--primary); text-decoration: underline; font-weight: 600;">¿Has olvidado tu contraseña?</a>
-            </div>
-        </div>
-
-        <!-- VISTA DE REGISTRO (NUEVA) -->
-        <div id="register-form" style="display: none;">
-            <div class="form-group" style="text-align: left; margin-bottom: 12px;">
-                <label style="font-size: 13px;">Nombre</label>
-                <input type="text" id="regNameInput" placeholder="Tu Nombre o Apodo" style="margin-bottom: 4px; height: 42px;">
-            </div>
-            <div class="form-group" style="text-align: left; margin-bottom: 12px;">
-                <label style="font-size: 13px;">Email</label>
-                <input type="email" id="regEmailInput" placeholder="tu@email.com" style="margin-bottom: 4px; height: 42px;">
-            </div>
-            <div class="form-group" style="text-align: left; margin-bottom: 20px;">
-                <label style="font-size: 13px;">Contraseña</label>
-                <input type="password" id="regPassInput" placeholder="******" style="height: 42px;">
-            </div>
-
-            <button class="btn-primary" style="margin-top: 0; width: 100%; padding: 10px; background: var(--success); margin-bottom: 16px;" onclick="registroEmailCompleto()">Crear Cuenta</button>
-
-            <div style="margin-top: 16px;">
-                <a href="javascript:void(0)" onclick="mostrarLogin()" style="font-size: 13px; color: var(--text-muted); text-decoration: underline; font-weight: 600;">Volver a iniciar sesión</a>
-            </div>
-        </div>
+<div class="header-container">
+    <h1>REGISTRO HORAS MD</h1>
+    <div class="header-btns">
+        <button id="ayudaBtn" title="Ayuda" onclick="toggleManual()">?</button>
+        <button id="modoBtn" onclick="toggleModo()">Modo...</button>
     </div>
 </div>
 
-<!-- APLICACIÓN PRINCIPAL -->
-<div id="app-container" class="container" style="display: none;">
-    <div class="header-container">
-        <div>
-            <span id="user-name-display" class="user-badge">Cargando usuario...</span>
-        </div>
-        <div class="header-btns">
-            <button class="btn-icon" onclick="mostrarInfo()" style="background: var(--info); color: white; border: none; display: flex; align-items: center; justify-content: center; padding: 6px 10px;" title="Ayuda">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" cy="16" x2="12" y2="12"></line><line x1="12" cy="8" x2="12.01" y2="8"></line></svg>
-            </button>
-            <button class="btn-icon" onclick="toggleModo()">🌓</button>
-            <button class="btn-icon" onclick="logout()" style="color: var(--danger); border-color: rgba(239, 68, 68, 0.3);">Salir</button>
-        </div>
+<div class="top-cards">
+    <div class="card positive card-extra">
+        <h3>Extra Acumuladas</h3>
+        <h2 id="totalExtra">0.00</h2>
     </div>
+    <div class="card negative">
+        <h3>Negativas</h3>
+        <h2 id="totalNeg">0.00</h2>
+    </div>
+    <div class="card exceso">
+        <h3>Exceso</h3>
+        <h2 id="totalExceso">0.00</h2>
+    </div>
+</div>
 
-    <div class="top-cards">
-        <div class="card card-extra">
-            <h3>Extra Acumuladas</h3>
-            <h2 id="totalExtra">0.00</h2>
-        </div>
-        <div class="card negative">
-            <h3>Negativas</h3>
-            <h2 id="totalNeg">0.00</h2>
-        </div>
-        <div class="card exceso">
-            <h3>Exceso</h3>
-            <h2 id="totalExceso">0.00</h2>
-        </div>
-    </div>
-
-    <div class="card" id="card-nuevo-registro">
-        <div style="display: flex; justify-content: space-between; align-items: center; cursor: pointer;" onclick="toggleFormulario()">
-            <h3 style="color: var(--text-main); margin: 0; font-size: 1.1rem; text-transform: none;">Nuevo Registro</h3>
-            <span id="icono-formulario" style="font-size: 1.2rem; user-select: none;">➕</span>
-        </div>
-        
-        <div id="seccion-formulario" style="display: none; margin-top: 16px;">
-            <div class="form-group">
-                <label>Tipo de hora</label>
-                <!-- Se ha añadido onfocus y onclick para centrar la pantalla al abrir -->
-                <select id="tipo" onchange="toggleCamposVacaciones()" onfocus="setTimeout(() => this.parentElement.scrollIntoView({behavior: 'smooth', block: 'center'}), 150)" onclick="setTimeout(() => this.parentElement.scrollIntoView({behavior: 'smooth', block: 'center'}), 150)">
-                    <option value="extra">➕ Extra (x1.75)</option>
-                    <option value="compensacion">⚖️ Compensación (x1.0)</option>
-                    <option value="negativa">➖ Negativa (x1.0)</option>
-                    <option value="exceso">⚠️ Exceso (x1.0)</option>
-                    <option value="festiva">🎉 Festiva (x2.25)</option>
-                    <option value="nocturna">🌙 Nocturna (x2.0)</option>
-                    <option value="inet">🌐 Añadir saldo inet (x1.0)</option>
-                    <option value="vacaciones">🌴 Vacaciones</option>
-                </select>
-            </div>
-            <div class="form-group" id="grupo-semana" style="display: none;">
-                <label>Semana del año</label>
-                <select id="semana"></select>
-            </div>
-            <div class="form-group" id="grupo-horas">
-                <label>Horas</label>
-                <input type="number" id="horas" placeholder="Ej: 2.5" step="0.01">
-            </div>
-            <div class="form-group" id="grupo-fecha">
-                <label>Fecha</label>
-                <input type="date" id="fecha">
-            </div>
-            <div class="form-group">
-                <label>Observaciones</label>
-                <input type="text" id="desc" placeholder="Nota rápida...">
-            </div>
-            <button id="btnGuardar" class="btn-primary" onclick="guardar()">GUARDAR</button>
-            <div id="btnCancelarEdicion" style="display: none; text-align: center; margin-top: 10px;">
-                <a href="javascript:void(0)" onclick="cancelarEdicion()" style="font-size: 13px; color: var(--danger); text-decoration: none; font-weight: bold;">Cancelar edición</a>
-            </div>
-        </div>
-    </div>
-
-    <div class="card" id="card-calendario">
-        <div style="display: flex; justify-content: space-between; align-items: center; cursor: pointer;" onclick="toggleCalendario()">
-            <h3 style="color: var(--text-main); margin: 0; font-size: 1.1rem; text-transform: none;">Calendario</h3>
-            <span id="icono-calendario" style="font-size: 1.2rem; user-select: none;">➕</span>
-        </div>
-        
-        <div id="seccion-calendario" style="display: none; margin-top: 16px;">
-            <div class="calendar-header">
-                <button class="btn-icon" onclick="cambiarMes(-1)">◀</button>
-                <span id="calendario-mes"></span>
-                <button class="btn-icon" onclick="cambiarMes(1)">▶</button>
-            </div>
-            <div class="calendar-grid">
-                <div class="calendar-day-name">L</div>
-                <div class="calendar-day-name">M</div>
-                <div class="calendar-day-name">X</div>
-                <div class="calendar-day-name">J</div>
-                <div class="calendar-day-name">V</div>
-                <div class="calendar-day-name">S</div>
-                <div class="calendar-day-name">D</div>
-            </div>
-            <div id="calendario-dias" class="calendar-grid"></div>
-        </div>
-    </div>
-
-    <div class="card" id="card-historial">
-        <div style="display: flex; justify-content: space-between; align-items: center; cursor: pointer;" onclick="toggleHistorial()">
-            <h3 style="color: var(--text-main); margin: 0; font-size: 1.1rem; text-transform: none;">Historial</h3>
-            <span id="icono-historial" style="font-size: 1.2rem; user-select: none;">➕</span>
-        </div>
-        
-        <div id="seccion-historial" style="display: none; margin-top: 16px;">
-            <input type="text" id="buscador" placeholder="Buscar por nota o fecha..." oninput="filtrarLocal()">
-            <div id="lista-cargando" style="text-align:center; padding: 20px; color: var(--text-muted);">Sincronizando datos...</div>
-            <div id="lista"></div>
-        </div>
-    </div>
+<div class="card">
+    <h3 style="text-align: left; margin-bottom: 5px;">Nuevo Registro</h3>
     
-    <!-- BOTONES DE IMPORTAR / EXPORTAR EXTRAÍDOS AL INICIO Y MÁS PEQUEÑOS -->
-    <div style="display: flex; justify-content: center; gap: 12px; margin-bottom: 20px;">
-        <button class="btn-icon" style="background: var(--info); color: white; border: none; padding: 8px 14px; font-size: 13px;" onclick="document.getElementById('importFile').click()">📥 Importar</button>
-        <button class="btn-icon" style="background: var(--warning); color: white; border: none; padding: 8px 14px; font-size: 13px;" onclick="exportarJSON()">📤 Exportar</button>
-        <button class="btn-icon" style="background: var(--success); color: white; border: none; padding: 8px 14px; font-size: 13px;" onclick="exportarPDF()">📄 PDF</button>
+    <div class="form-group">
+        <label>Tipo de hora</label>
+        <select id="tipo">
+            <option value="extra">➕ Extra (x1.75)</option>
+            <option value="negativa">➖ Negativa (x1.0)</option>
+            <option value="festiva">🎉 Festiva (x2.25)</option>
+            <option value="nocturna">🌙 Nocturna (x2.0)</option>
+            <option value="exceso">⚠️ Exceso (x1.0)</option>
+        </select>
     </div>
-    <input type="file" id="importFile" accept=".json" style="display:none" onchange="importarJSON(event)">
 
-    <button class="btn-danger-outline" onclick="reiniciarAno()">Reiniciar Año Actual</button>
-
-    <!-- CRÉDITOS DENTRO DE LA APP (NO VISIBLES EN LOGIN) -->
-    <div style="text-align: center; margin-top: 5px; margin-bottom: 30px; font-size: 12px; color: var(--text-muted); opacity: 0.7;">
-        AVS v.4.5
+    <div class="form-group">
+        <label>Horas</label>
+        <input type="number" id="horas" placeholder="0.00" step="0.01">
     </div>
+
+    <div class="form-group">
+        <label>Fecha</label>
+        <input type="date" id="fecha">
+    </div>
+
+    <div class="form-group">
+        <label>Observaciones</label>
+        <input type="text" id="desc" placeholder="Nota rápida...">
+    </div>
+
+    <button onclick="guardar()">GUARDAR</button>
 </div>
+
+<div class="card">
+    <div class="header-historial">
+        <h3>Historial</h3>
+        <div class="btn-group-sm">
+            <button style="background: var(--success);" onclick="exportarPDF()">📄 PDF</button>
+        </div>
+    </div>
+    <input type="text" id="buscador" placeholder="Buscar..." oninput="mostrar()" style="padding: 8px; font-size: 13px;">
+    
+    <div class="backup-controls">
+        <button onclick="exportarJSON()">💾 Exportar JSON</button>
+        <button onclick="document.getElementById('fileInput').click()">📂 Importar JSON</button>
+        <input type="file" id="fileInput" style="display:none" accept=".json" onchange="importarJSON(event)">
+    </div>
+
+    <div id="lista"></div>
+</div>
+
+<button style="background:#dc3545; margin-bottom: 30px; padding: 8px; font-size: 12px; width: auto; margin: 0 auto 40px; display: block;" onclick="reiniciarAno()">Reiniciar Año</button>
 
 <div id="mensaje">✅</div>
 
-<!-- Modal de Confirmación Genérico -->
-<div id="customModal" class="modal-overlay">
+<div style="text-align: center; margin-bottom: 30px; font-size: 11px; opacity: 0.5;">
+    Almacenamiento Local<br>
+    AVS v3.2
+</div>
+
+<!-- Modal de Confirmación -->
+<div id="customModal">
     <div class="modal-content">
-        <h3 id="modalTitle" style="margin-top:0; margin-bottom:15px; font-size: 1.1rem;">Confirmación</h3>
-        <div id="modalText" style="font-size: 15px; color: var(--text-muted); margin-bottom: 20px; white-space: pre-wrap; text-align: left;"></div>
+        <p id="modalText" style="font-size: 14px;"></p>
         <div class="modal-buttons">
-            <button id="modalBtnCancel">Cancelar</button>
-            <button id="modalBtnOk">Confirmar</button>
+            <button id="modalBtnCancel">No</button>
+            <button id="modalBtnOk">Sí</button>
         </div>
     </div>
 </div>
 
-<!-- FIREBASE Y LÓGICA DE LA APP -->
-<script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-    import { getAuth, signInWithPopup, GoogleAuthProvider, signInAnonymously, onAuthStateChanged, signOut, signInWithCustomToken, signInWithEmailAndPassword, createUserWithEmailAndPassword, sendPasswordResetEmail, updateProfile } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-    import { getFirestore, collection, addDoc, deleteDoc, doc, onSnapshot, updateDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+<!-- Modal de Manual/Ayuda -->
+<div id="manualModal">
+    <div class="modal-content">
+        <h3 style="margin-top:0">Guía de Funciones</h3>
+    <div class="carta-midas">
 
-    let firebaseConfig = {
-        apiKey: "AIzaSyA1ZDWVjptthMonjh3izMHo12zSCatIijo",
-        authDomain: "registro-horas-fd560.firebaseapp.com",
-        projectId: "registro-horas-fd560",
-        storageBucket: "registro-horas-fd560.firebasestorage.app",
-        messagingSenderId: "826522376259",
-        appId: "1:826522376259:web:d137f77934da0adc011cf6",
-        measurementId: "G-SD817XEWSH"
-    };
+        <div class="manual-item">
+            <b>🚀 Multiplicadores</b>
+            Cálculo automático: Extra (x1.75), Nocturna (x2.0) y Festiva (x2.25). Negativas y Excesos son 1:1.
+        <div class="alerta-top">
+            <h2>Acceso a la Nueva Sede</h2>
+            <a href="https://registro-horas-md.vercel.app/" class="boton-secundario" target="_blank" rel="noopener noreferrer">Ir a la Nueva Web</a>
+            <p>⚠️ Importante: Asegúrese de descargar su respaldo de datos (JSON) más abajo antes de marcharse.</p>
+        </div>
+        
+        <p>Estimado colaborador,</p>
+        
+        <p>Como todo en esta vida, las grandes etapas deben concluir para dar paso a estructuras superiores. Hemos tomado la determinación de trasladar nuestras operaciones a una nueva ubicación, más sofisticada, eficiente y segura.</p>
+        
+        <p>No debe temer por la pérdida de sus registros. Su dedicación y su tiempo son valores que custodiamos con absoluto rigor y respeto.</p>
 
-    if (typeof __firebase_config !== 'undefined') { firebaseConfig = JSON.parse(__firebase_config); }
-    const appIdStr = typeof __app_id !== 'undefined' ? __app_id : 'horas-md-vercel';
+        <div class="manual-item">
+            <b>📄 Exportar PDF</b>
+            Genera un documento profesional con tu historial detallado. Ideal para presentar informes, guardar registros físicos o enviar por correo.
+        <div class="instrucciones">
+            Pulse el botón inferior para extraer su historial (archivo JSON). Custodie este documento; será la llave para restaurar sus datos en nuestra nueva sede.
+        </div>
 
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const db = getFirestore(app);
+        <div class="manual-item">
+            <b>💾 Copias de Seguridad (JSON)</b>
+            <b>Exportar JSON:</b> Descarga un archivo con todos tus datos actuales. Guárdalo para no perder nada si cambias de móvil o borras el navegador.<br>
+            <b>Importar JSON:</b> Recupera tus datos desde una copia previamente guardada seleccionando el archivo .json.
+        </div>
+        <button onclick="exportarJSON()">Descargar mi respaldo de datos (JSON)</button>
 
-    let currentUser = null;
-    let unsubscribeData = null;
-    let registrosLocales = []; 
-    let isGuestMode = false;
-    let idEdicion = null;
+        <div class="manual-item">
+            <b>📉 Ajustes Manuales</b>
+            Si registras un valor negativo (ej: -1.0) en cualquier categoría, se restará esa cantidad exacta (factor x1.0) para correcciones rápidas.
+        <div class="nueva-sede">
+            <p>Le aguardamos con todo dispuesto en nuestra nueva dirección:</p>
+            <a href="https://registro-horas-md.vercel.app/" class="enlace-web" target="_blank" rel="noopener noreferrer">
+                registro-horas-md.vercel.app
+            </a>
+        </div>
 
-    // --- AUTENTICACIÓN ---
-    const initAuth = async () => {
-        if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-            try { await signInWithCustomToken(auth, __initial_auth_token); } catch(e){}
-        }
-    };
-    initAuth();
+        <button onclick="toggleManual()" style="background: var(--info); margin-top:10px">ENTENDIDO</button>
+        <div class="firma">
+            Atentamente,<br>Alberto-VS.
+        </div>
+    </div>
+</div>
 
-    if (localStorage.getItem('isGuestMode') === 'true') {
-        setTimeout(() => window.loginAnonimo(), 100);
+<script>
+    let lista = JSON.parse(localStorage.getItem('horas_md_data')) || [];
+
+    function guardarLocal() {
+        localStorage.setItem('horas_md_data', JSON.stringify(lista));
+        mostrar();
     }
 
-    // Función para recuperar contraseña
-    window.recuperarPassword = async () => {
-        const email = document.getElementById("emailInput").value;
-        if (!email) { 
-            showModal("Por favor, escribe tu correo electrónico en el campo superior para enviarte el enlace de recuperación."); 
-            return; 
-        }
-        try {
-            await sendPasswordResetEmail(auth, email);
-            showModal(`Se ha enviado un correo a ${email} con las instrucciones para restablecer tu contraseña. Revisa también tu carpeta de Spam.`);
-        } catch (error) {
-            console.error(error);
-            if (error.code === 'auth/user-not-found') {
-                showModal("Ese correo no está registrado en el sistema.");
-            } else {
-                showModal("Error al enviar el correo: " + error.message);
-            }
-        }
-    };
-
-    window.loginEmail = async () => {
-        const email = document.getElementById("emailInput").value;
-        const pass = document.getElementById("passInput").value;
-        if (!email || !pass) { showModal("Por favor, introduce email y contraseña."); return; }
-        try {
-            await signInWithEmailAndPassword(auth, email, pass);
-        } catch (error) {
-            console.error(error);
-            showModal("Error al iniciar sesión. Revisa tus credenciales.");
-        }
-    };
-
-    window.mostrarRegistro = () => {
-        document.getElementById("login-form").style.display = "none";
-        document.getElementById("register-form").style.display = "block";
-    };
-
-    window.mostrarLogin = () => {
-        document.getElementById("register-form").style.display = "none";
-        document.getElementById("login-form").style.display = "block";
-    };
-
-    window.registroEmailCompleto = async () => {
-        const nombre = document.getElementById("regNameInput").value;
-        const email = document.getElementById("regEmailInput").value;
-        const pass = document.getElementById("regPassInput").value;
-        
-        if (!nombre || !email || !pass) { showModal("Por favor, rellena todos los campos."); return; }
-        
-        try {
-            const userCredential = await createUserWithEmailAndPassword(auth, email, pass);
-            await updateProfile(userCredential.user, { displayName: nombre });
-            
-            document.getElementById('user-name-display').innerText = `👋 Hola, ${nombre}`;
-            showToast("Cuenta creada con éxito");
-            
-        } catch (error) {
-            console.error(error);
-            if (error.code === 'auth/email-already-in-use') {
-                showModal("Ese correo ya está registrado.");
-            } else if (error.code === 'auth/weak-password') {
-                showModal("La contraseña debe tener al menos 6 caracteres.");
-            } else {
-                showModal("Error al registrar: " + error.message);
-            }
-        }
-    };
-
-    window.loginGoogle = async () => {
-        try {
-            const provider = new GoogleAuthProvider();
-            provider.setCustomParameters({ prompt: 'select_account' });
-            await signInWithPopup(auth, provider);
-        } catch (error) {
-            console.error(error);
-            showModal("Error al conectar con Google. Usa el modo Invitado si el problema persiste.");
-        }
-    };
-
-    window.loginAnonimo = () => {
-        isGuestMode = true;
-        localStorage.setItem('isGuestMode', 'true');
-        currentUser = { uid: 'guest', isAnonymous: true, displayName: 'Invitado (Local)' };
-        document.getElementById('login-screen').style.display = 'none';
-        document.getElementById('app-container').style.display = 'block';
-        document.getElementById('user-name-display').innerText = `👋 Hola, Invitado (Local)`;
-        cargarDatosNube();
-    };
-
-    window.logout = () => {
-        if (isGuestMode) {
-            isGuestMode = false;
-            localStorage.removeItem('isGuestMode');
-            currentUser = null;
-            document.getElementById('login-screen').style.display = 'flex';
-            document.getElementById('app-container').style.display = 'none';
-            if (unsubscribeData) { unsubscribeData(); unsubscribeData = null; }
-            registrosLocales = [];
-            return;
-        }
-        signOut(auth);
-    };
-
-    onAuthStateChanged(auth, (user) => {
-        if (isGuestMode) return;
-        if (user) {
-            currentUser = user;
-            document.getElementById('login-screen').style.display = 'none';
-            document.getElementById('app-container').style.display = 'block';
-            
-            const nombre = user.isAnonymous ? "Invitado (Temporal)" : (user.displayName || user.email);
-            document.getElementById('user-name-display').innerText = `👋 Hola, ${nombre}`;
-            
-            cargarDatosNube();
-        } else {
-            currentUser = null;
-            if (localStorage.getItem('isGuestMode') !== 'true') {
-                document.getElementById('login-screen').style.display = 'flex';
-                document.getElementById('register-form').style.display = 'none';
-                document.getElementById('login-form').style.display = 'block';
-            }
-            document.getElementById('app-container').style.display = 'none';
-            if (unsubscribeData) { unsubscribeData(); unsubscribeData = null; }
-        }
-    });
-
-    window.toggleCamposVacaciones = () => {
-        const isVac = document.getElementById("tipo").value === "vacaciones";
-        const isEditing = idEdicion !== null;
-        
-        if (isVac && !isEditing) {
-            document.getElementById("grupo-semana").style.display = "block";
-            document.getElementById("grupo-fecha").style.display = "none";
-            document.getElementById("grupo-horas").style.display = "none";
-            if (document.getElementById("semana").options.length === 0) {
-                window.generarSemanas();
-            }
-        } else {
-            document.getElementById("grupo-semana").style.display = "none";
-            document.getElementById("grupo-fecha").style.display = "block";
-            document.getElementById("grupo-horas").style.display = "block";
-        }
-    };
-
-    window.generarSemanas = () => {
-        const select = document.getElementById("semana");
-        select.innerHTML = "";
-        const year = new Date().getFullYear();
-        let d = new Date(year, 0, 1);
-        const day = d.getDay();
-        const diff = d.getDate() - day + (day === 0 ? -6 : 1);
-        d = new Date(d.setDate(diff));
-
-        for (let weekNum = 1; weekNum <= 53; weekNum++) {
-            if (weekNum > 52 && d.getMonth() === 0 && d.getDate() > 4) break; 
-            
-            const startStr = `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}`;
-            let dEnd = new Date(d);
-            dEnd.setDate(dEnd.getDate() + 6);
-            const endStr = `${String(dEnd.getDate()).padStart(2,'0')}/${String(dEnd.getMonth()+1).padStart(2,'0')}`;
-            
-            const opt = document.createElement("option");
-            opt.value = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
-            opt.text = `Semana ${weekNum} (${startStr} - ${endStr})`;
-            select.appendChild(opt);
-            
-            d.setDate(d.getDate() + 7);
-        }
-    };
-
-    // --- BASE DE DATOS (FIRESTORE) ---
-    function cargarDatosNube() {
-        if (!currentUser) return;
-        
-        if (isGuestMode) {
-            document.getElementById("lista-cargando").style.display = "block";
-            const data = localStorage.getItem('registros_invitado');
-            registrosLocales = data ? JSON.parse(data) : [];
-            registrosLocales.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
-            document.getElementById("lista-cargando").style.display = "none";
-            renderizarUI();
-            return;
-        }
-
-        const ref = collection(db, 'artifacts', appIdStr, 'users', currentUser.uid, 'registros');
-        
-        document.getElementById("lista-cargando").style.display = "block";
-        document.getElementById("lista").innerHTML = "";
-
-        unsubscribeData = onSnapshot(ref, (snapshot) => {
-            registrosLocales = [];
-            snapshot.forEach(docSnap => {
-                registrosLocales.push({ ...docSnap.data(), id: docSnap.id });
-            });
-            registrosLocales.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
-            document.getElementById("lista-cargando").style.display = "none";
-            renderizarUI();
-        }, (error) => {
-            console.error("Error al leer:", error);
-            document.getElementById("lista-cargando").innerText = "Error de permisos al leer la nube.";
-        });
-    }
-
-    window.guardar = async () => {
+    window.guardar = () => {
         const hIn = parseFloat(document.getElementById("horas").value);
-        const descInput = document.getElementById("desc").value;
+        const desc = document.getElementById("desc").value || "-";
+        const fecha = document.getElementById("fecha").value;
         const tipoInput = document.getElementById("tipo").value;
 
-        if (tipoInput === "vacaciones" && !idEdicion) {
-            const startDateStr = document.getElementById("semana").value;
-            if (!startDateStr) { showModal("Selecciona una semana."); return; }
-            if (!currentUser) { showModal("Debes iniciar sesión."); return; }
-            
-            const fParts = startDateStr.split('-');
-            const startD = new Date(fParts[0], fParts[1]-1, fParts[2]);
-            const desc = descInput || "Vacaciones";
-            
-            let newRecords = [];
-            for(let i=0; i<7; i++) {
-                let currentD = new Date(startD);
-                currentD.setDate(startD.getDate() + i);
-                const fStr = `${currentD.getFullYear()}-${String(currentD.getMonth()+1).padStart(2, '0')}-${String(currentD.getDate()).padStart(2, '0')}`;
-                
-                newRecords.push({
-                    horasCalculadas: 0,
-                    horasOriginales: 0,
-                    desc: desc,
-                    fecha: fStr,
-                    tipoOriginal: "vacaciones",
-                    timestamp: Date.now() + i
-                });
-            }
-
-            if (isGuestMode) {
-                newRecords.forEach(nr => {
-                    nr.id = Date.now().toString() + Math.random().toString(36).substring(2, 7);
-                    registrosLocales.push(nr);
-                });
-                localStorage.setItem('registros_invitado', JSON.stringify(registrosLocales));
-                showToast("Semana de vacaciones guardada en local");
-                cancelarEdicion();
-                cargarDatosNube();
-                return;
-            }
-
-            try {
-                const refCol = collection(db, 'artifacts', appIdStr, 'users', currentUser.uid, 'registros');
-                for(let nr of newRecords) {
-                    await addDoc(refCol, nr);
-                }
-                showToast("Semana de vacaciones guardada en la nube");
-                cancelarEdicion();
-            } catch (error) {
-                console.error(error);
-                showModal("Error al guardar en la nube.");
-            }
-            return;
-        }
-
-        const desc = descInput || "-";
-        const fecha = document.getElementById("fecha").value;
-
-        // Se ha modificado para permitir el número 0
-        if (isNaN(hIn)) { showModal("Indica una cantidad de horas válida."); return; }
+        if (isNaN(hIn) || hIn === 0) { showModal("Indica una cantidad de horas válida."); return; }
         if (!fecha) { showModal("La fecha es necesaria."); return; }
-        if (!currentUser) { showModal("Debes iniciar sesión."); return; }
 
         let factor = 1.0;
+        
         if (hIn > 0) {
             if (tipoInput === "extra") factor = 1.75;
             else if (tipoInput === "festiva") factor = 2.25;
             else if (tipoInput === "nocturna") factor = 2.0;
+        } else {
+            factor = 1.0; 
         }
 
         const nuevoRegistro = {
+            id: Date.now().toString(),
             horasCalculadas: hIn * factor,
             horasOriginales: hIn,
             desc: desc,
@@ -742,665 +498,169 @@
             timestamp: Date.now()
         };
 
-        if (idEdicion) {
-            const regLocal = registrosLocales.find(r => r.id === idEdicion);
-            if (regLocal) nuevoRegistro.timestamp = regLocal.timestamp;
-        }
+        lista.push(nuevoRegistro);
+        lista.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
+        guardarLocal();
+    <script>
+        // Recuperamos la lista original del localStorage exacto que usaba la app anterior
+        let lista = JSON.parse(localStorage.getItem('horas_md_data')) || [];
 
-        if (isGuestMode) {
-            if (idEdicion) {
-                const index = registrosLocales.findIndex(r => r.id === idEdicion);
-                if (index !== -1) {
-                    nuevoRegistro.id = idEdicion;
-                    registrosLocales[index] = nuevoRegistro;
-                }
-                showToast("Registro actualizado localmente");
-            } else {
-                nuevoRegistro.id = Date.now().toString() + Math.random().toString(36).substring(2, 7);
-                registrosLocales.push(nuevoRegistro);
-                showToast("Guardado en local");
-            }
-            
-            localStorage.setItem('registros_invitado', JSON.stringify(registrosLocales));
-            cancelarEdicion();
-            cargarDatosNube();
-            return;
-        }
-
-        try {
-            if (idEdicion) {
-                const docRef = doc(db, 'artifacts', appIdStr, 'users', currentUser.uid, 'registros', idEdicion);
-                await updateDoc(docRef, nuevoRegistro);
-                showToast("Registro actualizado en la nube");
-            } else {
-                const ref = collection(db, 'artifacts', appIdStr, 'users', currentUser.uid, 'registros');
-                await addDoc(ref, nuevoRegistro);
-                showToast("Guardado en la nube");
-            }
-            cancelarEdicion();
-        } catch (error) {
-            console.error(error);
-            showModal("Error al guardar en la nube.");
-        }
-    };
-
-    window.editarRegistro = (id) => {
-        // Cerrar modal si está abierto
-        document.getElementById("customModal").style.display = "none";
-        mCb = null;
-
-        const reg = registrosLocales.find(r => r.id === id);
-        if (!reg) return;
-        
-        document.getElementById("tipo").value = reg.tipoOriginal;
-        document.getElementById("horas").value = reg.horasOriginales;
-        document.getElementById("fecha").value = reg.fecha;
-        document.getElementById("desc").value = reg.desc !== "-" ? reg.desc : "";
-        
-        idEdicion = id;
-        document.getElementById("btnGuardar").innerText = "ACTUALIZAR REGISTRO";
-        document.getElementById("btnGuardar").style.background = "var(--warning)";
-        document.getElementById("btnCancelarEdicion").style.display = "block";
-        
-        window.toggleCamposVacaciones();
-        
-        // Abrir formulario si estaba cerrado
-        const sec = document.getElementById("seccion-formulario");
-        if (sec.style.display === "none") {
-            toggleFormulario();
-        } else {
-            // Si ya estaba abierto, hacer scroll suave al formulario
-            document.getElementById("card-nuevo-registro").scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }
-    };
-
-    window.cancelarEdicion = () => {
         document.getElementById("horas").value = "";
         document.getElementById("desc").value = "";
-        idEdicion = null;
-        document.getElementById("tipo").value = "extra";
-        window.toggleCamposVacaciones();
-        document.getElementById("btnGuardar").innerText = "GUARDAR";
-        document.getElementById("btnGuardar").style.background = "var(--primary)";
-        document.getElementById("btnCancelarEdicion").style.display = "none";
+        showToast("Guardado");
     };
 
-    window.borrarRegistro = (docIdsStr) => {
-        // Cerrar el modal actual si estamos borrando desde el calendario
-        document.getElementById("customModal").style.display = "none";
-
-        // Pequeño delay para que no se pisen los modales
-        setTimeout(() => {
-            const docIds = docIdsStr.split(',');
-            const msg = docIds.length > 1 
-                ? (isGuestMode ? "¿Borrar toda la semana de vacaciones?" : "¿Borrar toda la semana de la nube?")
-                : (isGuestMode ? "¿Borrar este registro?" : "¿Borrar este registro de la nube?");
-
-            showModal(msg, true, async () => {
-                if (!currentUser) return;
-
-                if (isGuestMode) {
-                    registrosLocales = registrosLocales.filter(r => !docIds.includes(r.id));
-                    localStorage.setItem('registros_invitado', JSON.stringify(registrosLocales));
-                    showToast(docIds.length > 1 ? "Semana eliminada localmente" : "Registro eliminado localmente");
-                    cargarDatosNube();
-                    return;
-                }
-
-                try {
-                    for(let id of docIds) {
-                        const docRef = doc(db, 'artifacts', appIdStr, 'users', currentUser.uid, 'registros', id);
-                        await deleteDoc(docRef);
-                    }
-                    showToast(docIds.length > 1 ? "Semana eliminada" : "Registro eliminado");
-                } catch (error) {
-                    showModal("Error al borrar.");
-                }
-            });
-        }, 100);
+    window.borrarRegistro = (docId) => {
+        showModal("¿Borrar registro?", true, () => {
+            lista = lista.filter(item => item.id !== docId);
+            guardarLocal();
+            showToast("Registro borrado");
+        });
     };
 
     window.reiniciarAno = () => {
         const year = new Date().getFullYear();
         showModal(`¿Deseas borrar TODOS los registros del año ${year}?`, true, () => {
             setTimeout(() => {
-                showModal(`⚠️ ESTA ACCIÓN NO SE PUEDE DESHACER. ¿Estás absolutamente seguro?`, true, async () => {
-                    if (!currentUser) return;
-
-                    if (isGuestMode) {
-                        const yearStr = year.toString();
-                        registrosLocales = registrosLocales.filter(item => !item.fecha.startsWith(yearStr));
-                        localStorage.setItem('registros_invitado', JSON.stringify(registrosLocales));
-                        showToast("Registros del año borrados localmente");
-                        cargarDatosNube();
-                        return;
-                    }
-
-                    try {
-                        const yearStr = year.toString();
-                        const registrosBorrables = registrosLocales.filter(item => item.fecha.startsWith(yearStr));
-                        
-                        for (const reg of registrosBorrables) {
-                            const docRef = doc(db, 'artifacts', appIdStr, 'users', currentUser.uid, 'registros', reg.id);
-                            await deleteDoc(docRef);
-                        }
-                        showToast("Registros del año borrados");
-                    } catch (error) {
-                        console.error(error);
-                        showModal("Error al borrar los registros del año.");
-                    }
+                showModal(`⚠️ ESTA ACCIÓN NO SE PUEDE DESHACER.`, true, () => {
+                    lista = lista.filter(item => new Date(item.fecha).getFullYear() !== year);
+                    guardarLocal();
+                    showToast("Año borrado");
                 });
             }, 300);
         });
     };
 
-    // --- INTERFAZ DE USUARIO ---
-    window.getWeekAndYear = (fechaStr) => {
-        const f = new Date(fechaStr);
-        const d = new Date(Date.UTC(f.getFullYear(), f.getMonth(), f.getDate()));
-        const dayNum = d.getUTCDay() || 7;
-        d.setUTCDate(d.getUTCDate() + 4 - dayNum);
-        const yearStart = new Date(Date.UTC(d.getUTCFullYear(),0,1));
-        const week = Math.ceil((((d - yearStart) / 86400000) + 1)/7);
-        return { week, year: d.getUTCFullYear() };
-    };
-
-    window.mostrarInfo = () => {
-        showModal(`⚠️ ¡IMPORTANTE!\nLas horas se registran en formato decimal (base 100), no en minutos (base 60).\nEjemplos: 1.25 (1 hora 15 min) | 1.50 (1 hora 30 min) | 1.75 (1 hora 45 min).\n\nℹ️ AYUDA DE LA APLICACIÓN:\n\n• NUEVO REGISTRO: Añade tus horas indicando el tipo, cantidad, fecha y nota. Los cálculos se aplican y suman automáticamente.\n\n• CALENDARIO: Visualiza un resumen mensual. Los días con registros se colorean. Haz clic en un día para leer sus detalles o añadir notas.\n\n• HISTORIAL: Todos tus registros guardados en la nube ordenados por mes. Usa el buscador, borra entradas o exporta a PDF/JSON.\n\n🎨 LEYENDA DE COLORES:\n• Verde: Extra\n• Azul: Compensación\n• Morado: Negativa\n• Naranja: Exceso\n• Rojo: Festivo\n• Amarillo chillón: Vacaciones`, false, null, "Ayuda");
-    };
-
-    let currentCalDate = new Date();
-    let posScroll = { form: 0, cal: 0, hist: 0 }; 
-    let posScrollMeses = {}; 
-
-    window.toggleFormulario = () => {
-        const sec = document.getElementById("seccion-formulario");
-        const icono = document.getElementById("icono-formulario");
-        if (sec.style.display === "none") {
-            posScroll.form = window.scrollY; 
-            sec.style.display = "block";
-            icono.innerText = "➖";
-            setTimeout(() => {
-                document.getElementById("card-nuevo-registro").scrollIntoView({ behavior: 'smooth', block: 'center' });
-            }, 50);
-        } else {
-            sec.style.display = "none";
-            icono.innerText = "➕";
-            setTimeout(() => window.scrollTo({ top: posScroll.form, behavior: 'smooth' }), 50); 
-        }
-    };
-
-    window.toggleHistorial = () => {
-        const sec = document.getElementById("seccion-historial");
-        const icono = document.getElementById("icono-historial");
-        if (sec.style.display === "none") {
-            posScroll.hist = window.scrollY; 
-            sec.style.display = "block";
-            icono.innerText = "➖";
-            setTimeout(() => {
-                document.getElementById("card-historial").scrollIntoView({ behavior: 'smooth', block: 'center' });
-            }, 50);
-        } else {
-            sec.style.display = "none";
-            icono.innerText = "➕";
-            setTimeout(() => window.scrollTo({ top: posScroll.hist, behavior: 'smooth' }), 50); 
-        }
-    };
-
-    window.toggleCalendario = () => {
-        const sec = document.getElementById("seccion-calendario");
-        const icono = document.getElementById("icono-calendario");
-        if (sec.style.display === "none") {
-            posScroll.cal = window.scrollY; 
-            sec.style.display = "block";
-            icono.innerText = "➖";
-            renderizarCalendario();
-            setTimeout(() => {
-                document.getElementById("card-calendario").scrollIntoView({ behavior: 'smooth', block: 'center' });
-            }, 50);
-        } else {
-            sec.style.display = "none";
-            icono.innerText = "➕";
-            setTimeout(() => window.scrollTo({ top: posScroll.cal, behavior: 'smooth' }), 50); 
-        }
-    };
-
-    window.toggleMes = (mesId) => {
-        const div = document.getElementById(`mes-items-${mesId}`);
-        const header = document.getElementById(`mes-header-${mesId}`);
-        const icono = document.getElementById(`mes-icono-${mesId}`);
-        if (div.style.display === "none") {
-            posScrollMeses[mesId] = window.scrollY;
-            div.style.display = "block";
-            icono.innerText = "▼";
-            setTimeout(() => {
-                header.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            }, 50);
-        } else {
-            div.style.display = "none";
-            icono.innerText = "▶";
-            setTimeout(() => {
-                window.scrollTo({ top: posScrollMeses[mesId], behavior: 'smooth' });
-            }, 50);
-        }
-    };
-
-    window.cambiarMes = (offset) => {
-        currentCalDate.setMonth(currentCalDate.getMonth() + offset);
-        renderizarCalendario();
-    };
-
-    function obtenerFestivo(fechaStr) {
-        const [year, month, day] = fechaStr.split('-');
-        const md = `${month}-${day}`;
-        const festivosFijos = {
-            '01-01': 'Año Nuevo',
-            '01-06': 'Epifanía del Señor',
-            '05-01': 'Fiesta del Trabajo',
-            '06-24': 'San Juan',
-            '08-15': 'Asunción de la Virgen',
-            '09-11': 'Diada Nacional de Cataluña',
-            '09-24': 'La Mercè',
-            '10-12': 'Fiesta Nacional de España',
-            '11-01': 'Todos los Santos',
-            '12-06': 'Día de la Constitución Española',
-            '12-08': 'Inmaculada Concepción',
-            '12-25': 'Natividad del Señor',
-            '12-26': 'San Esteban'
-        };
-        return festivosFijos[md] || null;
-    }
-
-    // Función global para redirigir desde el calendario al nuevo registro
-    window.abrirNuevoRegistroDesdeCalendario = (fechaStr) => {
-        // Cerrar modal
-        document.getElementById("customModal").style.display = "none";
-        
-        // Colapsar calendario visualmente
-        const secCal = document.getElementById("seccion-calendario");
-        const iconoCal = document.getElementById("icono-calendario");
-        if(secCal.style.display !== "none") {
-            secCal.style.display = "none";
-            iconoCal.innerText = "➕";
-        }
-
-        // Expandir formulario si no está abierto
-        const secForm = document.getElementById("seccion-formulario");
-        if (secForm.style.display === "none") {
-            toggleFormulario();
-        }
-        
-        document.getElementById("tipo").value = "extra";
-        window.toggleCamposVacaciones();
-        
-        // Poner fecha y hacer scroll
-        document.getElementById("fecha").value = fechaStr;
-        setTimeout(() => {
-            document.getElementById("card-nuevo-registro").scrollIntoView({ behavior: 'smooth', block: 'start' });
-            // Resaltar brevemente el campo fecha
-            const inputFecha = document.getElementById("fecha");
-            inputFecha.style.borderColor = "var(--primary)";
-            inputFecha.style.boxShadow = "0 0 0 2px rgba(59,130,246,0.3)";
-            setTimeout(() => {
-                inputFecha.style.borderColor = "var(--border-color)";
-                inputFecha.style.boxShadow = "none";
-            }, 1500);
-        }, 100);
-    };
-
-    window.clickDiaCalendario = (fechaStr, tieneRegistros) => {
-        const registrosDia = registrosLocales.filter(r => r.fecha === fechaStr);
-        const nombreFestivo = obtenerFestivo(fechaStr);
-        
-        let htmlContent = "";
-        
-        if (nombreFestivo) {
-            htmlContent += `<div style="margin-bottom: 15px; color: #be123c; font-weight: bold; background: rgba(225, 29, 72, 0.1); padding: 8px; border-radius: 6px;">🎉 FESTIVO: ${nombreFestivo}</div>`;
-        }
-        
-        if (registrosDia.length > 0) {
-            // Calcular horas consumidas para saber si está tachado (caducidad)
-            let horasConsumidas = 0;
-            registrosLocales.forEach(item => {
-                if (item.horasOriginales < 0 && item.tipoOriginal !== "negativa" && item.tipoOriginal !== "exceso") {
-                    horasConsumidas += Math.abs(item.horasCalculadas);
-                } else if (item.tipoOriginal === "compensacion" && item.horasOriginales > 0) {
-                    horasConsumidas += item.horasCalculadas;
-                }
-            });
-
-            let extraPositivas = registrosLocales.filter(reg => reg.tipoOriginal === "extra" && reg.horasOriginales > 0)
-                .sort((a, b) => new Date(a.fecha) - new Date(b.fecha));
-
-            let idsTachados = new Set();
-            for (let reg of extraPositivas) {
-                if (horasConsumidas >= (reg.horasCalculadas - 0.05)) {
-                    idsTachados.add(reg.id);
-                    horasConsumidas -= reg.horasCalculadas;
-                } else {
-                    horasConsumidas -= reg.horasCalculadas;
-                }
-            }
-
-            registrosDia.forEach(r => {
-                let safeDesc = r.desc.replace(/</g, "&lt;").replace(/>/g, "&gt;");
-                if (safeDesc === "-") safeDesc = ""; // Limpiar guion por defecto
-                
-                let docId = r.id;
-                let tipoLabel = r.tipoOriginal.toUpperCase();
-                let hideEdit = false;
-
-                if (r.tipoOriginal === 'vacaciones') {
-                    const wy = window.getWeekAndYear(r.fecha);
-                    const sameWeekIds = registrosLocales.filter(x => x.tipoOriginal === 'vacaciones' && window.getWeekAndYear(x.fecha).year === wy.year && window.getWeekAndYear(x.fecha).week === wy.week).map(x => x.id);
-                    if (sameWeekIds.length > 0) {
-                        docId = sameWeekIds.join(',');
-                        tipoLabel = `VACACIONES SEMANA ${wy.week}`;
-                        hideEdit = true;
-                    }
-                }
-
-                // Lógica de caducidad SOLO para extras
-                let badgeVence = '';
-                if (r.tipoOriginal === "extra" && r.horasOriginales > 0) {
-                    const fParts = r.fecha.split('-');
-                    const f = new Date(fParts[0], fParts[1] - 1, fParts[2]); 
-                    let c = new Date(f.getFullYear(), f.getMonth() + 4, 1);
-                    let venceStr = c.toLocaleString('es-ES', { month: 'short', year: '2-digit' });
-                    
-                    if (idsTachados.has(r.id)) {
-                        badgeVence = `<span style="font-size: 12px; color: var(--text-muted); margin-left: 8px; font-weight: 600; text-decoration: line-through; opacity: 0.6;">⏳ Caduca: ${venceStr}</span>`;
-                    } else {
-                        badgeVence = `<span style="font-size: 12px; color: var(--text-muted); margin-left: 8px; font-weight: 600;">⏳ Caduca: ${venceStr}</span>`;
-                    }
-                }
-                
-                const colors = { extra: 'verde', compensacion: 'azul', festiva: 'verde', nocturna: 'verde', negativa: 'morado', exceso: 'amarillo', inet: 'verde', vacaciones: 'amarillo-chillon' };
-
-                htmlContent += `<div class="item" style="text-align: left; padding: 16px 0; align-items: flex-start; margin-left: -8px;">
-<div style="flex: 1; padding-right: 12px; text-align: left;">
-<span class="tipo ${colors[r.tipoOriginal]}">${tipoLabel}</span>${badgeVence}<br>
-${!hideEdit ? `<b style="font-size: 19px;">${r.horasOriginales}h</b> <span style="font-size: 15px; color: var(--text-muted);">(${r.horasCalculadas.toFixed(2)}h)</span><br>` : ''}
-<div style="margin-top:8px; font-size: 16px; color: var(--text-main);">
-<b>Notas:</b> <span style="color: var(--text-muted);">${safeDesc}</span>
-</div>
-</div>
-<div style="display: flex; flex-direction: column; gap: 8px; min-width: 95px;">
-<button class="editar-btn" style="background: rgba(16, 185, 129, 0.1); color: var(--success); font-weight: bold; padding: 8px 6px;" onclick="abrirNuevoRegistroDesdeCalendario('${fechaStr}')">Añadir Reg.</button>
-${!hideEdit ? `<button class="editar-btn" onclick="editarRegistro('${r.id}')">Editar</button>` : ''}
-<button class="borrar-btn" onclick="borrarRegistro('${docId}')">Borrar</button>
-</div>
-</div>`;
-            });
-        } else {
-            // Diseño para día vacío
-            htmlContent += `<div style="padding: 10px 0; text-align: left; color: var(--text-muted); font-size: 16px; margin-left: -8px;">
-<p style="margin-top:0;">No hay notas ni horas registradas en este día.</p>
-<button class="btn-primary" style="background: var(--success); width: 100%; margin-top: 10px; padding: 12px;" onclick="abrirNuevoRegistroDesdeCalendario('${fechaStr}')">➕ Añadir Registro</button>
-</div>`;
-        }
-
-        const tituloModal = `📅 Día ${fechaStr.split('-').reverse().join('/')}`;
-        showModal(htmlContent, false, null, tituloModal);
-    };
-
-    function renderizarCalendario() {
-        const cont = document.getElementById("calendario-dias");
-        if (!cont) return;
-        cont.innerHTML = "";
-        
-        const year = currentCalDate.getFullYear();
-        const month = currentCalDate.getMonth();
-        
-        document.getElementById("calendario-mes").innerText = new Date(year, month).toLocaleString('es-ES', { month: 'long', year: 'numeric' }).toUpperCase();
-            
-        let startDay = new Date(year, month, 1).getDay();
-        startDay = startDay === 0 ? 6 : startDay - 1;
-        
-        const daysInMonth = new Date(year, month + 1, 0).getDate();
-        
-        for (let i = 0; i < startDay; i++) {
-            cont.innerHTML += `<div class="calendar-day empty"></div>`;
-        }
-        
-        for (let d = 1; d <= daysInMonth; d++) {
-            const dateStr = `${year}-${String(month+1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
-            const registrosDia = registrosLocales.filter(r => r.fecha === dateStr);
-            const nombreFestivo = obtenerFestivo(dateStr);
-            
-            let colorClass = "";
-            let tieneRegistros = false;
-
-            if (nombreFestivo) {
-                colorClass = "cal-rojo";
-                tieneRegistros = true;
-            }
-            
-            if (registrosDia.length > 0) {
-                const tipo = registrosDia[0].tipoOriginal;
-                if (tipo === 'negativa') colorClass = "cal-morado";
-                else if (tipo === 'exceso') colorClass = "cal-amarillo";
-                else if (tipo === 'compensacion') colorClass = "cal-azul";
-                else if (tipo === 'vacaciones') colorClass = "cal-amarillo-chillon";
-                else colorClass = "cal-verde"; 
-                
-                if (nombreFestivo) {
-                    colorClass += " festivo-con-registro";
-                }
-                
-                tieneRegistros = true;
-            }
-            
-            const dayOfWeek = new Date(year, month, d).getDay();
-            if (!tieneRegistros && (dayOfWeek === 0 || dayOfWeek === 6)) {
-                colorClass = "cal-finde";
-            }
-            
-            // SIEMPRE asignamos el evento onclick ahora, pasando si tiene o no registros
-            cont.innerHTML += `<div class="calendar-day ${colorClass}" onclick="clickDiaCalendario('${dateStr}', ${tieneRegistros})">${d}</div>`;
-        }
-    }
-
-    window.filtrarLocal = () => { renderizarUI(); };
-
-    function renderizarUI() {
-        renderizarCalendario();
+    window.mostrar = () => {
         const cont = document.getElementById("lista");
         cont.innerHTML = "";
-        let tExtra = 0, tNeg = 0, tExc = 0;
+        let tExtraAcumulado = 0;
+        let tNegativasVisual = 0;
+        let tExceso = 0;
         
         const filter = document.getElementById("buscador").value.toLowerCase();
-        
-        // 1. Calculamos las horas consumidas (cualquier registro con valor negativo, excepto negativa y exceso)
-        let horasConsumidas = 0;
-        registrosLocales.forEach(item => {
-            if (item.horasOriginales < 0 && item.tipoOriginal !== "negativa" && item.tipoOriginal !== "exceso") {
-                horasConsumidas += Math.abs(item.horasCalculadas);
-            } else if (item.tipoOriginal === "compensacion" && item.horasOriginales > 0) {
-                horasConsumidas += item.horasCalculadas;
-            }
-        });
-
-        // 2. Obtenemos las horas extra positivas y las ordenamos desde la más antigua a la más nueva
-        let extraPositivas = registrosLocales.filter(r => r.tipoOriginal === "extra" && r.horasOriginales > 0)
-            .sort((a, b) => new Date(a.fecha) - new Date(b.fecha));
-
-        // 3. Cruzamos las horas consumidas con las extras más antiguas
-        let idsTachados = new Set();
-        for (let r of extraPositivas) {
-            if (horasConsumidas >= (r.horasCalculadas - 0.05)) { // Solo tacha si se ha consumido entera (margen de 0.05 por decimales)
-                idsTachados.add(r.id);
-                horasConsumidas -= r.horasCalculadas;
-            } else {
-                // Si sobra saldo vivo, restamos lo consumido y frenamos
-                horasConsumidas -= r.horasCalculadas;
-            }
-        }
-
         const meses = {};
-        
-        let processedLocales = [];
-        let vacGroups = {};
 
-        registrosLocales.forEach(item => {
-            if (item.tipoOriginal === 'vacaciones') {
-                const wy = window.getWeekAndYear(item.fecha);
-                const key = `${wy.year}-W${wy.week}`;
-                if (!vacGroups[key]) vacGroups[key] = { items: [], ids: [] };
-                vacGroups[key].items.push(item);
-                vacGroups[key].ids.push(item.id);
-            } else {
-                processedLocales.push(item);
-            }
-        });
-
-        Object.keys(vacGroups).forEach(k => {
-            const g = vacGroups[k];
-            g.items.sort((a,b) => new Date(a.fecha) - new Date(b.fecha));
-            const startItem = g.items[0];
-            const endItem = g.items[g.items.length-1];
-            
-            const sf = new Date(startItem.fecha);
-            const ef = new Date(endItem.fecha);
-            const sfFmt = `${String(sf.getDate()).padStart(2,'0')}/${String(sf.getMonth()+1).padStart(2,'0')}`;
-            const efFmt = `${String(ef.getDate()).padStart(2,'0')}/${String(ef.getMonth()+1).padStart(2,'0')}/${ef.getFullYear()}`;
-            
-            processedLocales.push({
-                ...startItem,
-                id: g.ids.join(','),
-                isGroupedVacation: true,
-                weekLabel: k.split('-W')[1],
-                fFmtStr: `${sfFmt} - ${efFmt}`,
-            });
-        });
-        
-        processedLocales.sort((a,b) => new Date(b.fecha) - new Date(a.fecha));
-
-        processedLocales.forEach(item => {
+        lista.forEach(item => {
             const f = new Date(item.fecha);
-            const fFmt = item.isGroupedVacation ? item.fFmtStr : `${String(f.getDate()).padStart(2,'0')}/${String(f.getMonth()+1).padStart(2,'0')}/${f.getFullYear()}`;
-            const mesNombre = f.toLocaleString('es-ES', { month: 'long' });
+            const fFmt = `${String(f.getDate()).padStart(2,'0')}/${String(f.getMonth()+1).padStart(2,'0')}/${f.getFullYear()}`;
             
-            if (filter) {
-                const searchString = `${fFmt} ${mesNombre} ${item.desc} ${item.tipoOriginal} ${item.horasOriginales}`.toLowerCase();
-                if (!searchString.includes(filter)) return;
-            }
+            if (filter && !item.desc.toLowerCase().includes(filter) && !fFmt.includes(filter)) return;
 
-            if (item.tipoOriginal === "negativa") tNeg += item.horasCalculadas; 
-            else if (item.tipoOriginal === "exceso") tExc += item.horasCalculadas;
-            else if (item.tipoOriginal === "compensacion" && item.horasOriginales > 0) tExtra -= item.horasCalculadas;
-            else if (item.tipoOriginal !== "vacaciones") tExtra += item.horasCalculadas;
+            if (item.tipoOriginal === "negativa") {
+                tNegativasVisual += item.horasCalculadas; 
+            } else if (item.tipoOriginal === "exceso") {
+                tExceso += item.horasCalculadas;
+            } else {
+                tExtraAcumulado += item.horasCalculadas;
+            }
 
             const mKey = `${f.getFullYear()}-${String(f.getMonth()+1).padStart(2,'0')}`;
-            if (!meses[mKey]) meses[mKey] = { label: mesNombre, items: [] };
-            
-            let venceStr = "";
-            let tachado = false;
-            
-            // Lógica de caducidad SOLO para extras en la lista
-            if (item.tipoOriginal === "extra" && item.horasOriginales > 0) {
-                let c = new Date(f.getFullYear(), f.getMonth() + 4, 1);
-                venceStr = c.toLocaleString('es-ES', { month: 'short', year: '2-digit' });
-                
-                // Si el ID está en el set, significa que fue calendarizado (consumido)
-                if (idsTachados.has(item.id)) {
-                    tachado = true;
-                }
+            if (!meses[mKey]) {
+                meses[mKey] = { 
+                    label: f.toLocaleString('es-ES', { month: 'long', year: 'numeric' }), 
+                    items: [], 
+                    vence: "" 
+                };
+        window.exportarJSON = () => {
+            if (lista.length === 0) {
+                alert("Estimado usuario, actualmente no consta ningún registro en su historial para exportar. Puede dirigirse directamente a la nueva web.");
+                return;
             }
-            meses[mKey].items.push({ ...item, fFmt, venceStr, tachado });
+            
+            if (item.tipoOriginal !== "negativa" && item.tipoOriginal !== "exceso") {
+                let c = new Date(f.getFullYear(), f.getMonth() + 4, 1);
+                meses[mKey].vence = c.toLocaleString('es-ES', { month: 'short', year: '2-digit' });
+            }
+            meses[mKey].items.push({ ...item, fFmt });
         });
 
-        if(Object.keys(meses).length === 0 && registrosLocales.length > 0) {
-            cont.innerHTML = `<div style="text-align:center; padding: 20px; color: var(--text-muted);">No hay coincidencias.</div>`;
-        } else if (registrosLocales.length === 0) {
-            cont.innerHTML = `<div style="text-align:center; padding: 30px; color: var(--text-muted);">Aún no tienes registros.</div>`;
-        }
-
-        Object.keys(meses).sort((a,b) => b.localeCompare(a)).forEach((k, index) => {
+        Object.keys(meses).sort((a,b) => b.localeCompare(a)).forEach(k => {
             const m = meses[k];
-            const isFiltering = filter !== "";
-            // MODIFICADO: isExpanded ahora solo es true si se está filtrando (buscador activo)
-            const isExpanded = isFiltering; 
-            const displayStyle = isExpanded ? 'block' : 'none';
-            const iconStr = isExpanded ? '▼' : '▶';
-
-            let mesHTML = `<div class="mes-titulo" id="mes-header-${k}" onclick="toggleMes('${k}')">
-                <span style="text-transform: capitalize;">${m.label} ${k.split('-')[0]}</span>
-                <span id="mes-icono-${k}" style="font-size: 13px;">${iconStr}</span>
-            </div>`;
-            
-            mesHTML += `<div id="mes-items-${k}" style="display: ${displayStyle}; padding-top: 8px;">`;
-
+            cont.innerHTML += `<div class="mes-titulo"><span style="text-transform: capitalize;">${m.label}</span>${m.vence ? '<span>Vence: '+m.vence+'</span>' : ''}</div>`;
             m.items.forEach(i => {
-                const colors = { extra: 'verde', compensacion: 'azul', festiva: 'verde', nocturna: 'verde', negativa: 'morado', exceso: 'amarillo', inet: 'verde', vacaciones: 'amarillo-chillon' };
-                
-                const desc = i.desc === "-" ? "" : i.desc;
-                const tipoLabel = i.isGroupedVacation ? `VACACIONES SEMANA ${i.weekLabel}` : i.tipoOriginal.toUpperCase();
-                
-                let badgeVence = '';
-                if (i.venceStr) {
-                    if (i.tachado) {
-                        badgeVence = `<span style="font-size: 12px; color: var(--text-muted); margin-left: 8px; font-weight: 600; text-decoration: line-through; opacity: 0.6;">⏳ Caduca: ${i.venceStr}</span>`;
-                    } else {
-                        badgeVence = `<span style="font-size: 12px; color: var(--text-muted); margin-left: 8px; font-weight: 600;">⏳ Caduca: ${i.venceStr}</span>`;
-                    }
-                }
-
-                mesHTML += `
+                const colors = { extra: 'verde', festiva: 'verde', nocturna: 'verde', negativa: 'rojo', exceso: 'amarillo' };
+                cont.innerHTML += `
                     <div class="item">
-                        <div style="flex: 1;">
-                            <span class="tipo ${colors[i.tipoOriginal]}">${tipoLabel}</span>${badgeVence}<br>
-                            ${!i.isGroupedVacation ? `<b style="font-size: 17px;">${i.horasOriginales}h</b> <span style="font-size: 14px; color: var(--text-muted);">(${i.horasCalculadas.toFixed(2)}h)</span><br>` : ''}
-                            <div style="margin-top:6px;">
-                                <span style="font-size: 15px; font-weight: 700; color: var(--text-main);">${i.fFmt}</span> 
-                                <span style="font-size: 15px; color: var(--text-muted);">${desc ? `• ${desc}` : ''}</span>
-                            </div>
+                        <div style="max-width: 70%">
+                            <span class="tipo ${colors[i.tipoOriginal]}">${i.tipoOriginal.toUpperCase()}</span><br>
+                            <b>${i.horasOriginales}h</b> <small style="opacity:0.6">(${i.horasCalculadas.toFixed(2)}h total)</small><br>
+                            <small style="font-size: 11px; display:block; margin-top:2px">${i.fFmt} - ${i.desc}</small>
                         </div>
-                        <div style="display: flex; flex-direction: column; gap: 6px; align-items: stretch; min-width: 70px; margin-right: 4px;">
-                            ${!i.isGroupedVacation ? `<button class="editar-btn" onclick="editarRegistro('${i.id}')">Editar</button>` : ''}
-                            <button class="borrar-btn" onclick="borrarRegistro('${i.id}')">Borrar</button>
-                        </div>
+                        <button class="borrar-btn" onclick="borrarRegistro('${i.id}')">Borrar</button>
                     </div>`;
             });
-            mesHTML += `</div>`;
-            cont.innerHTML += mesHTML;
         });
 
-        let totalMinsExtra = Math.round(Math.abs(tExtra) * 60);
-        let hrsExtra = Math.floor(totalMinsExtra / 60);
-        let minsExtra = (totalMinsExtra % 60).toString().padStart(2, '0');
-        let signExtra = tExtra < 0 ? "-" : "";
+        document.getElementById("totalExtra").innerText = tExtraAcumulado.toFixed(2);
+        document.getElementById("totalNeg").innerText = tNegativasVisual.toFixed(2);
+        document.getElementById("totalExceso").innerText = tExceso.toFixed(2);
+    };
 
-        document.getElementById("totalExtra").innerHTML = `${tExtra.toFixed(2)} <span style="font-size: 1.1rem; color: var(--text-muted); font-weight: 700; margin-left: 4px;">(${signExtra}${hrsExtra}h ${minsExtra}m)</span>`;
-        document.getElementById("totalNeg").innerText = tNeg.toFixed(2);
-        document.getElementById("totalExceso").innerText = tExc.toFixed(2);
-    }
+    window.exportarJSON = () => {
+        if (lista.length === 0) return;
+        const dataStr = JSON.stringify(lista, null, 2);
+        const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
+        const linkElement = document.createElement('a');
+        linkElement.setAttribute('href', dataUri);
+        linkElement.setAttribute('download', `Copia_Horas_${new Date().toISOString().split('T')[0]}.json`);
+        linkElement.click();
+    };
 
-    // Funciones de UI
+    window.importarJSON = (event) => {
+        const file = event.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            try {
+                const importedData = JSON.parse(e.target.result);
+                lista = importedData;
+                guardarLocal();
+                showToast("Importado");
+            } catch (err) { showModal("Error al importar."); }
+            const dataStr = JSON.stringify(lista, null, 2);
+            const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
+            const linkElement = document.createElement('a');
+            linkElement.setAttribute('href', dataUri);
+            linkElement.setAttribute('download', `Respaldo_Migracion_${new Date().toISOString().split('T')[0]}.json`);
+            linkElement.click();
+        };
+        reader.readAsText(file);
+    };
+
     window.toggleModo = () => {
         document.body.classList.toggle("dark-mode");
-        localStorage.setItem("modo", document.body.classList.contains("dark-mode") ? "dark" : "light");
+        const isDark = document.body.classList.contains("dark-mode");
+        localStorage.setItem("modo", isDark ? "dark" : "light");
+        updateModoBtnLabel();
     };
+
+    window.toggleManual = () => {
+        const m = document.getElementById("manualModal");
+        m.style.display = (m.style.display === "flex") ? "none" : "flex";
+    };
+
+    function updateModoBtnLabel() {
+        const isDark = document.body.classList.contains("dark-mode");
+        document.getElementById("modoBtn").innerText = isDark ? "☀️ Claro" : "🌙 Oscuro";
+    }
+
     if (localStorage.getItem("modo") === "dark") document.body.classList.add("dark-mode");
+    updateModoBtnLabel();
 
     function showToast(t) {
         const m = document.getElementById("mensaje");
-        m.style.display = "block"; m.innerText = t + " ✅"; 
-        setTimeout(() => m.style.display = "none", 2500);
+        m.innerText = t + " ✅"; m.style.display = "block";
+        setTimeout(() => m.style.display = "none", 2000);
     }
 
     let mCb = null;
-    // Función showModal actualizada para permitir cambiar el título y cambiar Entendido por Atrás
-    window.showModal = (msg, conf = false, cb = null, title = "Confirmación") => {
-        document.getElementById("modalTitle").innerText = title;
-        document.getElementById("modalText").innerHTML = msg;
+    window.showModal = (msg, conf = false, cb = null) => {
+        document.getElementById("modalText").innerText = msg;
         document.getElementById("customModal").style.display = "flex";
         document.getElementById("modalBtnCancel").style.display = conf ? "block" : "none";
-        document.getElementById("modalBtnOk").innerText = conf ? "Confirmar" : "Atrás";
-        document.getElementById("modalBtnOk").style.background = conf ? "var(--danger)" : "var(--primary)";
         mCb = cb;
     };
-    
     document.getElementById("modalBtnOk").onclick = () => {
         document.getElementById("customModal").style.display = "none";
         if (mCb) mCb();
@@ -1410,17 +670,25 @@ ${!hideEdit ? `<button class="editar-btn" onclick="editarRegistro('${r.id}')">Ed
     };
 
     window.exportarPDF = () => {
-        const { jsPDF } = window.jspdf; const doc = new jsPDF();
-        doc.setFontSize(16); doc.text("REGISTRO HORAS MD", 14, 20);
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
         
-        let tExtra = 0, tNeg = 0, tExc = 0;
-        registrosLocales.forEach(i => {
+        // Título principal
+        doc.setFontSize(18);
+        doc.setTextColor(40);
+        doc.text("REGISTRO HORAS MD", 14, 20);
+        
+        // Calcular Totales para el resumen
+        let tExtra = 0;
+        let tNeg = 0;
+        let tExc = 0;
+        lista.forEach(i => {
             if (i.tipoOriginal === "negativa") tNeg += i.horasCalculadas;
             else if (i.tipoOriginal === "exceso") tExc += i.horasCalculadas;
-            else if (i.tipoOriginal === "compensacion" && i.horasOriginales > 0) tExtra -= i.horasCalculadas;
-            else if (i.tipoOriginal !== "vacaciones") tExtra += i.horasCalculadas;
+            else tExtra += i.horasCalculadas;
         });
 
+        // Cuadro de Resumen en la parte superior
         doc.setFontSize(11);
         doc.setTextColor(60);
         doc.text("RESUMEN GENERAL", 14, 32);
@@ -1434,187 +702,34 @@ ${!hideEdit ? `<button class="editar-btn" onclick="editarRegistro('${r.id}')">Ed
             margin: { left: 14, right: 14 }
         });
 
-        let finalY = doc.lastAutoTable.finalY || 35;
-        
-        let processedLocales = [];
-        let vacGroups = {};
+        // Tabla de detalles
+        const finalY = doc.lastAutoTable.finalY || 35;
+        doc.setFontSize(11);
+        doc.text("DETALLE DE REGISTROS", 14, finalY + 15);
 
-        registrosLocales.forEach(item => {
-            if (item.tipoOriginal === 'vacaciones') {
-                const wy = window.getWeekAndYear(item.fecha);
-                const key = `${wy.year}-W${wy.week}`;
-                if (!vacGroups[key]) vacGroups[key] = { items: [], ids: [] };
-                vacGroups[key].items.push(item);
-                vacGroups[key].ids.push(item.id);
-            } else {
-                processedLocales.push(item);
-            }
+        const tableData = lista.map(i => [
+            i.fecha.split('-').reverse().join('/'), 
+            i.tipoOriginal.toUpperCase(), 
+            i.horasOriginales.toFixed(2), 
+            i.horasCalculadas.toFixed(2), 
+            i.desc
+        ]);
+
+        doc.autoTable({ 
+            startY: finalY + 20, 
+            head: [['Fecha', 'Tipo', 'Horas Base', 'Horas Calc.', 'Observaciones']], 
+            body: tableData,
+            headStyles: { fillColor: [0, 123, 255] }, // Azul primario
+            alternateRowStyles: { fillColor: [245, 245, 245] },
+            margin: { left: 14, right: 14 }
         });
 
-        Object.keys(vacGroups).forEach(k => {
-            const g = vacGroups[k];
-            g.items.sort((a,b) => new Date(a.fecha) - new Date(b.fecha));
-            const startItem = g.items[0];
-            const endItem = g.items[g.items.length-1];
-            
-            const sf = new Date(startItem.fecha);
-            const ef = new Date(endItem.fecha);
-            const sfFmt = `${String(sf.getDate()).padStart(2,'0')}/${String(sf.getMonth()+1).padStart(2,'0')}`;
-            const efFmt = `${String(ef.getDate()).padStart(2,'0')}/${String(ef.getMonth()+1).padStart(2,'0')}/${ef.getFullYear()}`;
-            
-            processedLocales.push({
-                ...startItem,
-                id: g.ids.join(','),
-                isGroupedVacation: true,
-                weekLabel: k.split('-W')[1],
-                fFmtStr: `${sfFmt} - ${efFmt}`,
-            });
-        });
-        
-        const registrosSorted = processedLocales.sort((a,b) => new Date(b.fecha) - new Date(a.fecha));
-
-        const meses = {};
-        registrosSorted.forEach(item => {
-            const f = new Date(item.fecha);
-            const mKey = `${f.getFullYear()}-${String(f.getMonth()+1).padStart(2,'0')}`;
-            const mesNombre = f.toLocaleString('es-ES', { month: 'long' });
-            if (!meses[mKey]) meses[mKey] = { label: mesNombre, year: f.getFullYear(), items: [] };
-            meses[mKey].items.push(item);
-        });
-
-        if (Object.keys(meses).length === 0) {
-            doc.setFontSize(11);
-            doc.text("No hay registros detallados.", 14, finalY + 15);
-        } else {
-            Object.keys(meses).sort((a,b) => b.localeCompare(a)).forEach(k => {
-                const m = meses[k];
-                finalY += 15;
-                
-                if (finalY > 270) {
-                    doc.addPage();
-                    finalY = 20;
-                }
-                
-                doc.setFontSize(12);
-                doc.setTextColor(40);
-                doc.setFont(undefined, 'bold');
-                doc.text(`${m.label.toUpperCase()} ${m.year}`, 14, finalY);
-
-                const tableData = m.items.map(i => {
-                    if (i.isGroupedVacation) {
-                        return [
-                            i.fFmtStr, 
-                            `VACACIONES SEMANA ${i.weekLabel}`, 
-                            "-", 
-                            "-", 
-                            i.desc
-                        ];
-                    }
-                    return [
-                        i.fecha.split('-').reverse().join('/'), 
-                        i.tipoOriginal.toUpperCase(), 
-                        i.horasOriginales.toFixed(2), 
-                        i.horasCalculadas.toFixed(2), 
-                        i.desc
-                    ];
-                });
-
-                doc.autoTable({ 
-                    startY: finalY + 4, 
-                    head: [['Fecha', 'Tipo', 'Horas Base', 'Horas Calc.', 'Observaciones']], 
-                    body: tableData,
-                    headStyles: { fillColor: [59, 130, 246] }, 
-                    alternateRowStyles: { fillColor: [248, 250, 252] },
-                    margin: { left: 14, right: 14 }
-                });
-                
-                finalY = doc.lastAutoTable.finalY;
-            });
-        }
-
-        doc.save(`Horas_MD_${new Date().toLocaleDateString('es-ES').replace(/\//g, '-')}.pdf`);
-    };
-
-    window.exportarJSON = () => {
-        if (registrosLocales.length === 0) {
-            showModal("No hay registros para exportar.");
-            return;
-        }
-        const exportData = registrosLocales.map(({ fFmt, id, ...rest }) => rest);
-        const dataStr = JSON.stringify(exportData, null, 2);
-        const blob = new Blob([dataStr], { type: "application/json" });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = `Horas_MD_${new Date().toLocaleDateString('es-ES').replace(/\//g, '-')}.json`;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-    };
-
-    window.importarJSON = (event) => {
-        const file = event.target.files[0];
-        if (!file) return;
-
-        const reader = new FileReader();
-        reader.onload = async (e) => {
-            try {
-                const data = JSON.parse(e.target.result);
-                if (!Array.isArray(data)) throw new Error("Formato de archivo inválido.");
-                
-                document.getElementById('importFile').value = '';
-
-                showModal(isGuestMode ? `¿Deseas importar ${data.length} registros localmente?` : `¿Deseas importar ${data.length} registros a la nube?`, true, async () => {
-                    if (!currentUser) return;
-                    
-                    const originalText = document.getElementById("lista-cargando").innerText;
-                    document.getElementById("lista-cargando").style.display = "block";
-                    document.getElementById("lista-cargando").innerText = "Importando datos, por favor espera...";
-                    
-                    if (isGuestMode) {
-                        for (const item of data) {
-                            const { id, fFmt, ...registroLimpio } = item; 
-                            if (registroLimpio.fecha && registroLimpio.tipoOriginal) {
-                                registroLimpio.id = Date.now().toString() + Math.random().toString(36).substring(2, 7);
-                                registrosLocales.push(registroLimpio);
-                            }
-                        }
-                        localStorage.setItem('registros_invitado', JSON.stringify(registrosLocales));
-                        showToast(`Registros importados localmente`);
-                        document.getElementById("lista-cargando").innerText = originalText;
-                        document.getElementById("lista-cargando").style.display = "none";
-                        cargarDatosNube();
-                        return;
-                    }
-
-                    try {
-                        const ref = collection(db, 'artifacts', appIdStr, 'users', currentUser.uid, 'registros');
-                        for (const item of data) {
-                            const { id, fFmt, ...registroLimpio } = item; 
-                            if (registroLimpio.fecha && registroLimpio.tipoOriginal) {
-                                await addDoc(ref, registroLimpio);
-                            }
-                        }
-                        showToast(`Registros importados correctamente`);
-                    } catch (error) {
-                        console.error(error);
-                        showModal("Error al importar los registros.");
-                    } finally {
-                        document.getElementById("lista-cargando").innerText = originalText;
-                        document.getElementById("lista-cargando").style.display = "none";
-                    }
-                });
-            } catch (error) {
-                console.error(error);
-                showModal("Error al leer el archivo JSON. Verifica que sea válido.");
-                document.getElementById('importFile').value = '';
-            }
-        };
-        reader.readAsText(file);
+        doc.save(`Historial_Horas_MD_${new Date().toLocaleDateString()}.pdf`);
     };
 
     document.getElementById('fecha').valueAsDate = new Date();
+    mostrar();
 </script>
+    </script>
 </body>
 </html>
